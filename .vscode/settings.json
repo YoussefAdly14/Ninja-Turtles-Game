@@ -1,0 +1,6 @@
+{
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "cmake.useCMakePresets": "always",
+  "cmake.debugConfig": { "cwd": "${workspaceFolder}" },
+  "files.associations": { "*.vert": "glsl", "*.frag": "glsl" }
+}

@@ -1,0 +1,24 @@
+# build output (never commit, never put in the submission zip)
+build/
+out/
+cmake-build-*/
+CMakeUserPresets.json
+*.exe
+*.o
+*.obj
+*.pdb
+*.ilk
+
+# IDE / tool caches
+.vs/
+.cache/
+.idea/
+compile_commands.json
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Office lock files (e.g. when TMNT.xlsx is open)
+~$*
