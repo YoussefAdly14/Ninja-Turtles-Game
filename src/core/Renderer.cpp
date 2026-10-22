@@ -109,6 +109,19 @@ void Renderer::drawCircle(glm::vec2 center, float radius, const glm::vec4& color
     draw(Shape::Circle, model, color);
 }
 
+// rounded rectangle = a cross of two quads + a circle in each corner (composed, no new mesh)
+void Renderer::drawRoundedRect(glm::vec2 center, glm::vec2 size, float radius, const glm::vec4& color)
+{
+    radius = std::fmin(radius, std::fmin(size.x, size.y) * 0.5f);
+    drawRect(center, { size.x - 2.0f * radius, size.y }, color);
+    drawRect(center, { size.x, size.y - 2.0f * radius }, color);
+    glm::vec2 half = size * 0.5f - glm::vec2(radius);
+    drawCircle(center + glm::vec2(-half.x, -half.y), radius, color);
+    drawCircle(center + glm::vec2( half.x, -half.y), radius, color);
+    drawCircle(center + glm::vec2(-half.x,  half.y), radius, color);
+    drawCircle(center + glm::vec2( half.x,  half.y), radius, color);
+}
+
 // a thick line is a quad stretched from a to b
 void Renderer::drawLine(glm::vec2 a, glm::vec2 b, float thickness, const glm::vec4& color)
 {

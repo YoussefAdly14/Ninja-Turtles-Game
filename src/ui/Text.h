@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 
 // On-screen text (owner C, req 8). FreeType only (CLAUDE.md), following
-// learnopengl In-Practice/Text-Rendering (or 2D-Game/Render-text). FreeType is already built and linked.
+// learnopengl In-Practice/Text-Rendering. Font: Bangers (SIL OFL 1.1), assets/fonts/.
 // Positions are world units; (x, y) is the left end of the baseline.
 namespace Text
 {

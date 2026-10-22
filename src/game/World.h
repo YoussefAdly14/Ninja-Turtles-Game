@@ -8,6 +8,7 @@
 #include "game/Villain.h"
 #include "game/Projectile.h"
 #include "game/Collectible.h"
+#include "game/Effects.h"
 
 // Everything that exists during one game. A new game = World::reset() (req 20, 25).
 // Game owns one World and runs the state machine around it; gameplay code only needs World.
@@ -21,6 +22,7 @@ struct World
     std::vector<Villain> villains;
     std::vector<Projectile> projectiles;
     std::vector<Collectible> collectibles;
+    Effects effects;       // smoke, sparks, defeat effects: visual only (req 68, 83, 120)
 
     float time = 0.0f;     // seconds of gameplay (frozen while paused)
     int nextId = 1;

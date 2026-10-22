@@ -32,8 +32,12 @@ struct Entity
         if (hp <= 0) { hp = 0; alive = false; }
     }
 
-    // where the health bar goes (req 81, 93)
-    glm::vec2 healthBarPosition() const { return glm::vec2(x, top() + 16.0f); }
+    // where the health bar goes (req 81, 93); kept below the HUD so tall villains in the top lane still show it
+    glm::vec2 healthBarPosition() const
+    {
+        float y = top() + HEALTH_BAR_GAP;
+        return glm::vec2(x, y < HEALTH_BAR_MAX_Y ? y : HEALTH_BAR_MAX_Y);
+    }
 };
 
 // Same lane and the x ranges overlap (the "contact" rule of spec 3.1).

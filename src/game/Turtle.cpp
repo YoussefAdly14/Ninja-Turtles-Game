@@ -35,12 +35,14 @@ const char* turtleName(TurtleKind kind)
     }
 }
 
-// TODO(B): this is a first pass so the skeleton runs. Owner B finishes reqs 45-48, 71, 74, 78-84.
+// Movement + attack timing for one turtle (reqs 45-47, 71, 74, 78). Damage between units is applied
+// in Combat::resolve after everything has moved.
 void Turtle::update(float dt, World& world)
 {
     age += dt;
-    if (hitFlash > 0.0f) hitFlash -= dt * 4.0f;
-    if (attackAnim > 0.0f) attackAnim -= dt * 3.0f;
+    if (hitFlash > 0.0f) hitFlash -= dt / HIT_FLASH_DURATION;
+    if (attackAnim > 0.0f) attackAnim -= dt / ATTACK_ANIM_DURATION;
+    meleeStrike = false;
 
     // jump arc: parabola over JUMP_DURATION
     if (jumpTimer > 0.0f) {
@@ -53,34 +55,30 @@ void Turtle::update(float dt, World& world)
         yOffset = 0.0f;
     }
     if (duckTimer > 0.0f) duckTimer -= dt;
-    height = ducking ? TURTLE_HEIGHT * DUCK_HEIGHT_SCALE : TURTLE_HEIGHT;
+    height = ducking ? TURTLE_HEIGHT * DUCK_HEIGHT_SCALE : TURTLE_HEIGHT;   // a lower box ducks under HIGH shots (req 58)
 
     // walk right unless fighting (req 45, 48)
     if (canMove() && !fighting) {
         x += TURTLE_WALK_SPEED * dt;
-        walkCycle += dt * 8.0f;
+        walkCycle += dt * WALK_CYCLE_SPEED;
     }
     if (left() > WORLD_WIDTH) alive = false;   // OQ3: walks off-screen and is removed
 
-    // attack on an interval from the moment it is placed (req 47)
+    if (kind == TurtleKind::Donatello) return;   // never attacks (req 78)
+
+    // strike frame of the current swing/throw: the katana lands or the sai leaves the hand (req 71, 74)
+    if (strikePending && 1.0f - attackAnim >= STRIKE_POINT) {
+        strikePending = false;
+        if (kind == TurtleKind::Leonardo) meleeStrike = true;   // Combat hits the nearest villain in reach
+        else world.spawnProjectile(ProjectileKind::Sai, lane, right(), true);
+    }
+
+    // a new attack on an interval from the moment it is placed, even with no villain around (req 47)
     attackTimer -= dt;
     if (attackTimer <= 0.0f) {
-        switch (kind) {
-        case TurtleKind::Leonardo:
-            attackTimer = LEONARDO_ATTACK_INTERVAL;
-            attackAnim = 1.0f;
-            // TODO(B): damage the nearest villain within LEONARDO_REACH on the strike frame (req 71)
-            break;
-        case TurtleKind::Raphael:
-            attackTimer = RAPHAEL_ATTACK_INTERVAL;
-            attackAnim = 1.0f;
-            world.spawnProjectile(ProjectileKind::Sai, lane, right(), true);
-            break;
-        case TurtleKind::Donatello:
-            attackTimer = 1e9f;   // never attacks (req 78)
-            break;
-        default: break;
-        }
+        attackTimer = kind == TurtleKind::Leonardo ? LEONARDO_ATTACK_INTERVAL : RAPHAEL_ATTACK_INTERVAL;
+        attackAnim = 1.0f;
+        strikePending = true;
     }
 }
 
@@ -88,7 +86,7 @@ Pose Turtle::pose() const
 {
     Pose p;
     p.time = age;
-    p.walkCycle = walkCycle;
+    p.walkCycle = (canMove() && !fighting) ? walkCycle : 0.0f;   // standing still: idle legs, no frozen stride
     p.attack = attackAnim > 0.0f ? 1.0f - attackAnim : 0.0f;
     p.ducking = ducking;
     p.inAir = jumpTimer > 0.0f;
@@ -99,7 +97,9 @@ Pose Turtle::pose() const
 void Turtle::draw() const
 {
     glm::mat4 base = translate2D(glm::mat4(1.0f), x, bottom());
-    Renderer::setDamageTint(damageTint());
+    // redder as health drops + a short extra flash right after a hit (req 82)
+    float tint = damageTint() + (hitFlash > 0.0f ? hitFlash * HIT_FLASH_TINT : 0.0f);
+    Renderer::setDamageTint(tint > 1.0f ? 1.0f : tint);
     TurtleModels::draw(kind, base, pose());
     Renderer::setDamageTint(0.0f);
 }

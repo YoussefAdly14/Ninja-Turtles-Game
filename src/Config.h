@@ -11,6 +11,8 @@ const float WORLD_WIDTH = 1600.0f;
 const float WORLD_HEIGHT = 900.0f;
 const float MAX_DELTA_TIME = 0.05f;      // dt clamp so dragging the window doesn't teleport things (req 5)
 const unsigned int RANDOM_SEED = 0;      // 0 = random every run, any other value = reproducible run (req 13)
+const bool  DEV_KEYS_ENABLED = true;     // F2-F5 testing keys (req 17). Set false before submission.
+const int   DEV_COIN_BONUS = 100;        // F2
 
 // ---------------- layout (y goes up, lane 0 is the TOP lane) ----------------
 const int   LANE_COUNT = 4;                     // spec minimum is 3
@@ -70,6 +72,27 @@ const float PROJECTILE_SIZE = 28.0f;            // hitbox (square)
 const float HIGH_SHOT_HEIGHT = 95.0f;           // above the floor: hits standing, missed when ducking
 const float MID_SHOT_HEIGHT = 60.0f;
 const float LOW_SHOT_HEIGHT = 18.0f;            // skims the floor: hits standing, missed when jumping
+const float PROJECTILE_SPIN_SPEED = 720.0f;     // degrees/s, sai + shuriken
+const float PROJECTILE_IMPACT_DURATION = 0.15f; // impact flash before a projectile that hit is removed (req 75)
+
+// ---------------- combat animation timing (owner B) ----------------
+const float ATTACK_ANIM_DURATION = 0.33f;       // one swing / throw / shot / punch (drives Pose::attack)
+const float STRIKE_POINT = 0.5f;                // swing progress where the katana/punch lands and shots leave the hand (req 71)
+const float HIT_FLASH_DURATION = 0.25f;         // short flash after taking a hit (req 82, 94)
+const float HIT_FLASH_TINT = 0.35f;             // extra red on top of the damage tint while flashing
+const float WALK_CYCLE_SPEED = 8.0f;            // walk animation rate (Pose::walkCycle per second)
+
+// ---------------- effects (owner B: req 68, 83, 120) ----------------
+const int   EFFECTS_MAX_PARTICLES = 600;        // cap, extra spawns are skipped
+const float SMOKE_PUFF_DURATION = 0.5f;         // ninja smoke on placement / defeat (req 68)
+const int   SMOKE_PUFF_COUNT = 9;               // puffs in the outer ring (+3 in the middle)
+const float SMOKE_PUFF_SPEED = 110.0f;
+const float SMOKE_PUFF_ALPHA = 0.85f;
+const float HIT_SPARK_DURATION = 0.25f;         // sparks on every hit (req 120)
+const int   HIT_SPARK_COUNT = 7;
+const float HIT_SPARK_SPEED = 380.0f;
+const float DEFEAT_EFFECT_DURATION = 0.6f;      // shell spin / dropped weapon (req 83)
+const float EFFECT_GRAVITY = 900.0f;            // falling pieces and sparks
 
 // ---------------- waves ----------------
 const int   WAVE_COUNT = 3;
@@ -82,5 +105,10 @@ const float WAVE_BREAK_DURATION = 2.5f;         // pause + banner between waves
 // ---------------- collectibles ----------------
 const float PIZZA_SIZE = 40.0f;
 
+// ---------------- health bars ----------------
+const float HEALTH_BAR_GAP = 16.0f;                       // above the head
+const float HEALTH_BAR_MAX_Y = PLAYFIELD_TOP - 12.0f;    // never under the HUD (tall villains in the top lane)
+
 // ---------------- cutscene ----------------
 const float CUTSCENE_DURATION = 16.0f;          // spec: 10-20 s
+const bool  CUTSCENE_SKIP_ENABLED = true;       // Space/Enter skips (OQ10: set false if the TA doesn't allow it)

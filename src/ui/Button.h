@@ -11,7 +11,8 @@ enum class MenuAction
     VolumeUp, VolumeDown, ToggleMute, Back // sound settings (bonus)
 };
 
-// One button style reused by every menu (req 18, NF16).
+// One button style reused by every menu (req 18, NF16): a riveted green plate that
+// glows + grows on hover and sinks into its dark lip while the mouse button is held on it.
 struct Button
 {
     glm::vec2 center;
@@ -19,6 +20,7 @@ struct Button
     std::string label;
     MenuAction action = MenuAction::None;
     bool hovered = false;
+    bool pressed = false;    // hovered + left mouse button held
 
     bool contains(glm::vec2 p) const;
     void draw() const;

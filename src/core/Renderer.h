@@ -27,4 +27,5 @@ namespace Renderer
     void drawRect(glm::vec2 center, glm::vec2 size, const glm::vec4& color, float angleDegrees = 0.0f);
     void drawCircle(glm::vec2 center, float radius, const glm::vec4& color);
     void drawLine(glm::vec2 a, glm::vec2 b, float thickness, const glm::vec4& color);
+    void drawRoundedRect(glm::vec2 center, glm::vec2 size, float radius, const glm::vec4& color);   // opaque colours only (parts overlap)
 }

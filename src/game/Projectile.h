@@ -11,7 +11,10 @@ struct Projectile : Entity
     float velocity = 0.0f;      // units/s, + = right, - = left
     int   damage = 1;
     float spin = 0.0f;          // degrees, for the spinning sai/shuriken
+    bool  hasHit = false;       // hit something: stops, flashes for PROJECTILE_IMPACT_DURATION, then removed
+    float impactTimer = 0.0f;
 
+    void impact();              // called by Combat on the frame it hits (req 50, 75)
     void update(float dt);
     void draw() const;
 };
