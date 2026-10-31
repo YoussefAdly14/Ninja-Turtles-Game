@@ -2,6 +2,7 @@
 #include "game/Types.h"
 
 int turtleCost(TurtleKind kind);
+int pizzaValue(VillainKind kind, int waveNumber);   // what a defeated villain drops (waveNumber is 1-based)
 
 // Pizza (coins) + card lock state (req 59, 64, 65, 67).
 class Economy

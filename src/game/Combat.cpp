@@ -172,7 +172,8 @@ static void dropLoot(World& world)
     for (const Villain& v : world.villains) {
         if (v.alive) continue;
         float dropX = v.x < WORLD_WIDTH - PIZZA_SIZE ? v.x : WORLD_WIDTH - PIZZA_SIZE;
-        world.dropPizza(v.lane, dropX);   // pushes into collectibles, not villains: safe in this loop
+        // harder villains + later waves drop more (Config: *_PIZZA_VALUE, PIZZA_WAVE_BONUS)
+        world.dropPizza(v.lane, dropX, pizzaValue(v.kind, world.waves.waveNumber()));   // pushes into collectibles: safe in this loop
     }
 }
 

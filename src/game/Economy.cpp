@@ -11,6 +11,15 @@ int turtleCost(TurtleKind kind)
     }
 }
 
+int pizzaValue(VillainKind kind, int waveNumber)
+{
+    int base = PIZZA_VALUE;
+    if (kind == VillainKind::Bebop) base = BEBOP_PIZZA_VALUE;
+    else if (kind == VillainKind::Rocksteady) base = ROCKSTEADY_PIZZA_VALUE;
+    int wavesAfterFirst = waveNumber > 1 ? waveNumber - 1 : 0;
+    return base + PIZZA_WAVE_BONUS * wavesAfterFirst;
+}
+
 void Economy::reset()
 {
     coins = START_COINS;

@@ -54,9 +54,9 @@ void World::spawnProjectile(ProjectileKind kind, int lane, float x, bool fromTur
     projectiles.push_back(makeProjectile(kind, lane, x, fromTurtle, nextId++));
 }
 
-void World::dropPizza(int lane, float x)
+void World::dropPizza(int lane, float x, int value)
 {
-    collectibles.push_back(makePizza(lane, x, nextId++));
+    collectibles.push_back(makePizza(lane, x, value, nextId++));
 }
 
 bool World::villainReachedLair() const

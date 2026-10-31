@@ -10,4 +10,4 @@ struct Collectible : Entity
     void draw() const;
 };
 
-Collectible makePizza(int lane, float x, int id);
+Collectible makePizza(int lane, float x, int value, int id);

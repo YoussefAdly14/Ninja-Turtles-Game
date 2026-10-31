@@ -34,7 +34,7 @@ struct World
     bool placeTurtle(TurtleKind kind, int lane);   // buys it; false if no lane or not enough pizza
     void spawnVillain(VillainKind kind, int lane);
     void spawnProjectile(ProjectileKind kind, int lane, float x, bool fromTurtle);
-    void dropPizza(int lane, float x);
+    void dropPizza(int lane, float x, int value);
 
     bool villainReachedLair() const;   // -> lose (req 97)
     bool allWavesCleared() const;      // -> win (req 107)
