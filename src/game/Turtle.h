@@ -13,6 +13,8 @@ struct Turtle : Entity
     TurtleKind kind = TurtleKind::Leonardo;
     float attackTimer = 0.0f;   // counts down to the next attack
     float attackAnim = 0.0f;    // 1 when an attack starts, falls to 0 (drives Pose::attack)
+    bool  strikePending = false; // swing started, katana hasn't landed / sai hasn't left the hand yet
+    bool  meleeStrike = false;   // Leonardo's katana reached its strike frame this frame (Combat applies it)
     float jumpTimer = 0.0f;     // > 0 while in the air
     float duckTimer = 0.0f;     // keeps the duck for DUCK_MIN_DURATION after S is released
     bool  ducking = false;

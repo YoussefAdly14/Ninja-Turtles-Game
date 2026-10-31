@@ -11,7 +11,9 @@ struct Villain : Entity
     VillainKind kind = VillainKind::FootSoldier;
     float speed = 0.0f;
     float attackTimer = 0.0f;
-    float attackAnim = 0.0f;
+    float attackAnim = 0.0f;    // 1 when an attack starts, falls to 0 (drives Pose::attack)
+    bool  strikePending = false; // attack started, shot not released / punch not landed yet
+    bool  meleeStrike = false;   // Rocksteady's punch reached its strike frame this frame (Combat applies it)
     bool  fighting = false;     // touching a turtle: stand still (set by Combat each frame)
     float walkCycle = 0.0f;
     float hitFlash = 0.0f;

@@ -4,6 +4,7 @@
 static bool g_keysDown[GLFW_KEY_LAST + 1] = {};
 static bool g_keysPressed[GLFW_KEY_LAST + 1] = {};
 static bool g_mouseClicked = false;
+static bool g_mouseDown = false;      // left button held (pressed look on buttons/cards)
 static double g_mouseX = 0.0, g_mouseY = 0.0;
 
 static void keyCallback(GLFWwindow* /*window*/, int key, int /*scancode*/, int action, int /*mods*/)
@@ -23,6 +24,8 @@ static void mouseButtonCallback(GLFWwindow* /*window*/, int button, int action, 
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
         g_mouseClicked = true;
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+        g_mouseDown = (action == GLFW_PRESS);
 }
 
 static void cursorPosCallback(GLFWwindow* /*window*/, double xpos, double ypos)
@@ -57,6 +60,11 @@ bool Input::wasKeyPressed(int key)
 bool Input::wasMouseClicked()
 {
     return g_mouseClicked;
+}
+
+bool Input::isMouseDown()
+{
+    return g_mouseDown;
 }
 
 glm::vec2 Input::mouseWorld()

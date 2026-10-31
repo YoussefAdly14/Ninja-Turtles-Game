@@ -41,37 +41,48 @@ const char* villainName(VillainKind kind)
     }
 }
 
-// TODO(B): first pass so the skeleton runs. Owner B finishes reqs 86, 88, 90, 96.
+// Movement + attack timing for one villain (reqs 47, 86, 88, 90). Damage is applied in Combat::resolve.
 void Villain::update(float dt, World& world)
 {
     age += dt;
-    if (hitFlash > 0.0f) hitFlash -= dt * 4.0f;
-    if (attackAnim > 0.0f) attackAnim -= dt * 3.0f;
+    if (hitFlash > 0.0f) hitFlash -= dt / HIT_FLASH_DURATION;
+    if (attackAnim > 0.0f) attackAnim -= dt / ATTACK_ANIM_DURATION;
+    meleeStrike = false;
 
-    // walk left toward the Lair unless fighting
+    // walk left toward the Lair unless fighting (req 48); villains pass through villains (req 51, OQ8)
     if (!fighting) {
         x -= speed * dt;
-        walkCycle += dt * 8.0f;
+        walkCycle += dt * WALK_CYCLE_SPEED;
     }
 
-    attackTimer -= dt;
-    if (attackTimer <= 0.0f) {
-        attackAnim = 1.0f;
+    // strike frame: the shuriken/bolt leaves the hand or the punch lands
+    if (strikePending && 1.0f - attackAnim >= STRIKE_POINT) {
+        strikePending = false;
         switch (kind) {
-        case VillainKind::FootSoldier:
-            attackTimer = FOOT_ATTACK_INTERVAL;
+        case VillainKind::FootSoldier:   // HIGH shuriken, duck under it (req 86)
             world.spawnProjectile(ProjectileKind::Shuriken, lane, left(), false);
             break;
-        case VillainKind::Bebop:
-            attackTimer = BEBOP_ATTACK_INTERVAL;
+        case VillainKind::Bebop:         // LOW blaster bolt, jump over it (req 88)
             world.spawnProjectile(ProjectileKind::BlasterBolt, lane, left(), false);
             break;
-        case VillainKind::Rocksteady:
-            attackTimer = ROCKSTEADY_ATTACK_INTERVAL;
-            // TODO(B): ROCKSTEADY_DAMAGE to the nearest turtle within ROCKSTEADY_REACH (req 90, OQ4)
+        case VillainKind::Rocksteady:    // melee: Combat hits the nearest turtle in reach for 2 (req 90, OQ4)
+            meleeStrike = true;
             break;
         default: break;
         }
+    }
+
+    // a new attack on an interval from the moment it appears, even with no turtle around (req 47)
+    attackTimer -= dt;
+    if (attackTimer <= 0.0f) {
+        switch (kind) {
+        case VillainKind::FootSoldier: attackTimer = FOOT_ATTACK_INTERVAL;       break;
+        case VillainKind::Bebop:       attackTimer = BEBOP_ATTACK_INTERVAL;      break;
+        case VillainKind::Rocksteady:  attackTimer = ROCKSTEADY_ATTACK_INTERVAL; break;
+        default: break;
+        }
+        attackAnim = 1.0f;
+        strikePending = true;
     }
 }
 
@@ -79,7 +90,7 @@ Pose Villain::pose() const
 {
     Pose p;
     p.time = age;
-    p.walkCycle = walkCycle;
+    p.walkCycle = fighting ? 0.0f : walkCycle;   // standing still: idle legs, no frozen stride or dust
     p.attack = attackAnim > 0.0f ? 1.0f - attackAnim : 0.0f;
     p.hitFlash = hitFlash > 0.0f ? hitFlash : 0.0f;
     return p;
@@ -88,7 +99,9 @@ Pose Villain::pose() const
 void Villain::draw() const
 {
     glm::mat4 base = translate2D(glm::mat4(1.0f), x, bottom());
-    Renderer::setDamageTint(damageTint());
+    // redder as health drops + a short extra flash right after a hit (req 94)
+    float tint = damageTint() + (hitFlash > 0.0f ? hitFlash * HIT_FLASH_TINT : 0.0f);
+    Renderer::setDamageTint(tint > 1.0f ? 1.0f : tint);
     VillainModels::draw(kind, base, pose());
     Renderer::setDamageTint(0.0f);
 }

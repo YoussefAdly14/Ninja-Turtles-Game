@@ -55,6 +55,58 @@ void Game::startNewGame()
     m_hud = Hud();
 }
 
+// Dev aid for testing combat without clicking: fixed seed, lots of pizza, a turtle setup that
+// exercises melee, ranged, Donatello protecting a Leonardo behind him, and every lane.
+void Game::startDemo()
+{
+    seedRandom(1);
+    startNewGame();
+    m_world.economy.add(1000);
+    m_world.placeTurtle(TurtleKind::Leonardo, 0);
+    m_world.placeTurtle(TurtleKind::Raphael, 1);
+    m_world.placeTurtle(TurtleKind::Leonardo, 2);
+    m_world.placeTurtle(TurtleKind::Donatello, 2);
+    m_world.placeTurtle(TurtleKind::Raphael, 3);
+    state = GameState::Playing;
+}
+
+// Dev aid: open one screen directly so it can be screenshotted without clicking (tools/capture.ps1).
+// Pause/win/lose sit over a demo game that has already run for a while, so the scene isn't empty.
+void Game::devStart(const std::string& screen)
+{
+    const float DEV_WARMUP_SECONDS = 12.0f;
+    const float DEV_WARMUP_STEP = 1.0f / 60.0f;
+
+    if (screen == "cutscene") {
+        startNewGame();
+        m_cutscene.start();
+        state = GameState::Cutscene;
+        return;
+    }
+    if (screen == "sound") {
+        state = GameState::SoundSettings;
+        return;
+    }
+
+    startDemo();
+    for (float t = 0.0f; t < DEV_WARMUP_SECONDS; t += DEV_WARMUP_STEP) m_world.update(DEV_WARMUP_STEP);
+    if (screen == "pause") state = GameState::Paused;
+    else if (screen == "win") state = GameState::Won;
+    else if (screen == "lose") state = GameState::Lost;
+}
+
+// F2-F5 testing keys (req 17), only while playing. Turn off with DEV_KEYS_ENABLED before submission.
+//   F2 +pizza   F3 defeat every villain on screen (they still drop pizza)   F4 lose now   F5 end this wave's spawning
+void Game::handleDebugKeys()
+{
+    if (!DEV_KEYS_ENABLED) return;
+    if (Input::wasKeyPressed(GLFW_KEY_F2)) m_world.economy.add(DEV_COIN_BONUS);
+    if (Input::wasKeyPressed(GLFW_KEY_F3))
+        for (Villain& v : m_world.villains) v.takeDamage(v.hp);
+    if (Input::wasKeyPressed(GLFW_KEY_F4)) state = GameState::Lost;
+    if (Input::wasKeyPressed(GLFW_KEY_F5)) m_world.waves.skipRestOfWave();
+}
+
 void Game::handleMenuAction(MenuAction action)
 {
     switch (action) {
@@ -85,6 +137,7 @@ void Game::handleMenuAction(MenuAction action)
 void Game::update(float dt)
 {
     m_clock += dt;
+    if (dt > 0.0f) m_fps = m_fps * 0.95f + (1.0f / dt) * 0.05f;
     if (Input::wasKeyPressed(GLFW_KEY_F1)) m_debugDraw = !m_debugDraw;
 
     glm::vec2 mouse = Input::mouseWorld();
@@ -101,6 +154,9 @@ void Game::update(float dt)
         break;
     case GameState::Cutscene:
         m_cutscene.update(dt);
+        // optional skip (req 37, OQ10: switch off in Config.h if the TA says no)
+        if (CUTSCENE_SKIP_ENABLED && (Input::wasKeyPressed(GLFW_KEY_SPACE) || Input::wasKeyPressed(GLFW_KEY_ENTER)))
+            m_cutscene.skip();
         if (m_cutscene.finished()) state = GameState::Playing;
         break;
     case GameState::Playing:
@@ -125,6 +181,8 @@ void Game::updatePlaying(float dt)
         state = GameState::Paused;
         return;
     }
+    handleDebugKeys();
+    if (state != GameState::Playing) return;
 
     glm::vec2 mouse = Input::mouseWorld();
     bool clicked = Input::wasMouseClicked();
@@ -206,6 +264,7 @@ void Game::renderWorld()
     }
 
     for (const Projectile& p : m_world.projectiles) p.draw();
+    m_world.effects.draw();   // smoke + sparks (req 68, 83, 120): over characters, under health bars
 
     for (const Turtle& tu : m_world.turtles) drawHealthBar(tu.healthBarPosition(), tu.hp, tu.maxHp, true);
     for (const Villain& v : m_world.villains) drawHealthBar(v.healthBarPosition(), v.hp, v.maxHp, false);
@@ -225,4 +284,7 @@ void Game::renderDebug()
     for (const Villain& v : m_world.villains) box(v, glm::vec4(1.0f, 0.0f, 0.0f, 0.3f));
     for (const Projectile& p : m_world.projectiles) box(p, glm::vec4(1.0f, 1.0f, 0.0f, 0.4f));
     for (const Collectible& c : m_world.collectibles) box(c, glm::vec4(0.0f, 0.6f, 1.0f, 0.4f));
+
+    // FPS in the water channel, where the HUD can't cover it (NF3 check). dt is clamped, so it reads >= 20.
+    Text::draw("FPS " + std::to_string(static_cast<int>(m_fps + 0.5f)), 12.0f, 18.0f, 0.5f, WHITE);
 }

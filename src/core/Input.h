@@ -13,5 +13,6 @@ namespace Input
     bool isKeyDown(int key);            // GLFW_KEY_...
     bool wasKeyPressed(int key);
     bool wasMouseClicked();             // left button went down this frame
+    bool isMouseDown();                 // left button is held (pressed look on buttons)
     glm::vec2 mouseWorld();             // cursor in world units (letterbox-aware)
 }

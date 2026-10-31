@@ -3,7 +3,7 @@
 #include "models/PropModels.h"
 #include "Config.h"
 
-Collectible makePizza(int lane, float x, int id)
+Collectible makePizza(int lane, float x, int value, int id)
 {
     Collectible c;
     c.id = id;
@@ -11,7 +11,7 @@ Collectible makePizza(int lane, float x, int id)
     c.x = x;
     c.width = PIZZA_SIZE;
     c.height = PIZZA_SIZE;
-    c.value = PIZZA_VALUE;
+    c.value = value;
     return c;
 }
 

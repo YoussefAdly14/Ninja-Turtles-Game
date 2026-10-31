@@ -49,7 +49,7 @@ One shader (`assets/shaders/basic.vert/.frag`): vertex colour x `u_Color`, then 
 - `setView(mat4)` is for the cutscene camera. Reset to identity before drawing UI on top.
 
 ### Hierarchy (`core/Transform.h`)
-`part = parent * local`. Use `joint(parent, pivotX, pivotY, degrees)` for anything that rotates (shoulder, elbow, katana), and `part(parent, x, y, w, h, deg)` for the final visible piece. Never use a `part()` result as a parent, because its scale would stretch the children. `models/Placeholders.cpp` shows the pattern: body -> shoulder -> arm -> hand -> weapon.
+`part = parent * local`. Use `joint(parent, pivotX, pivotY, degrees)` for anything that rotates (shoulder, elbow, katana), and `part(parent, x, y, w, h, deg)` for the final visible piece. Never use a `part()` result as a parent, because its scale would stretch the children. `models/TurtleModels.cpp` shows the full pattern: pelvis -> torso -> shoulder -> elbow -> hand -> weapon.
 
 ### Model functions (`models/*.h`)
 `void drawX(const glm::mat4& base, const Pose& pose)`
@@ -88,5 +88,7 @@ All state for one game. `reset()` = new game (coins, waves, lanes, entities). Ga
 | B: combat & characters | `game/{Turtle,Villain,Projectile,Combat}`, projectile models in `models/PropModels.cpp`, `game/Effects` (new) |
 | C: UI, input, audio | `core/Input`, `ui/*`, `audio/*`, env props: pipes, graffiti wall, water stream; lane highlight look in `LaneManager::draw` |
 | D: art & cutscene | `core/{Transform,Colors}`, `models/{Pose,TurtleModels,FootModel,LairModel}`, pizza in `PropModels.cpp`, `scene/{Cutscene,Timeline}`, `Environment::drawBackground` + mutagen barrels |
+
+Dev aids: `src/dev/Gallery.cpp` (`--gallery turtles|villains|props`), `Game::startDemo` (`--demo`), `tools/capture.ps1` (window screenshots). Modelers: check your work in the gallery, including the grayscale column.
 
 Every unfinished spot is marked `TODO(A|B|C|D)` with its requirement number: `grep -rn "TODO(B)" src`.

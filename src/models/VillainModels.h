@@ -10,6 +10,8 @@ namespace VillainModels
 {
     void init();
     void shutdown();
+    void initFootSoldier();        // FootModel.cpp meshes, called by init()/shutdown()
+    void shutdownFootSoldier();
 
     void drawFootSoldier(const glm::mat4& base, const Pose& pose);
     void drawBebop(const glm::mat4& base, const Pose& pose);

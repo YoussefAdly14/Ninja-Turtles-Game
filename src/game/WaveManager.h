@@ -15,6 +15,7 @@ public:
     int  waveNumber() const { return m_wave + 1; }    // 1-based, for the HUD
     bool isBetweenWaves() const;                      // for a "Wave 2/3" banner (req 103)
     bool finished() const { return m_finished; }      // every wave spawned AND cleared -> win
+    void skipRestOfWave() { m_queue.clear(); }        // dev aid (req 17): no more spawns this wave
 
 private:
     int   m_wave = 0;

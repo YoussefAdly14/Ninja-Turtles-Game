@@ -32,7 +32,17 @@ The first build compiles GLFW and FreeType and takes a minute; after that only c
 | W / Up | selected lanes' turtles jump |
 | S / Down (hold) | selected lanes' turtles duck |
 | Esc | pause / resume |
-| F1 | show hitboxes (debug) |
+| Space / Enter | skip the cutscene (`CUTSCENE_SKIP_ENABLED`) |
+| F1 | hitboxes + FPS (debug) |
+| F2 / F3 / F4 / F5 | +100 pizza / defeat all villains / lose now / end this wave's spawning (`DEV_KEYS_ENABLED`) |
+
+## Dev tools (never needed to play)
+
+| Command | What it shows |
+|---|---|
+| `NinjaTurtlesGame.exe --gallery turtles` (or `villains`, `props`) | every model in every pose: idle, walk, attack, duck, jump, hurt tint, locked grayscale |
+| `NinjaTurtlesGame.exe --demo` | skips menu + cutscene, fixed seed, turtles already in every lane (combat testing) |
+| `powershell -ExecutionPolicy Bypass -File tools/capture.ps1 -GameArgs "--gallery turtles" -Delays "1.5,2" -Out shots/t` | runs the game and saves screenshots of its window after each delay (no mouse needed) |
 
 ## Project layout
 
@@ -47,7 +57,9 @@ src/
   scene/            Environment, Cutscene, Timeline
   ui/               Text, Button, Menu, Hud, HealthBar
   audio/            Audio
+  dev/              Gallery (--gallery dev aid)
 assets/             shaders/ (+ fonts/, sounds/ as they are added)
+tools/              capture.ps1 (screenshot helper)
 context/docs/       REQUIREMENTS.md (all reqs, theme bible, team split), LABS.md, ARCHITECTURE.md
 context/reference/  original spec PDF, TMNT.xlsx, lab code, course starter
 context/external/   third-party libraries (GLAD, GLFW, GLM, FreeType)
@@ -55,15 +67,17 @@ context/external/   third-party libraries (GLAD, GLFW, GLM, FreeType)
 
 **`context/docs/ARCHITECTURE.md` explains how the modules talk to each other and who owns which file.** Read it before your first change.
 
-## What works / what's a placeholder
+## Status
 
-Working: window with letterboxing, 2D renderer + building-block shapes, input, state machine (Main Menu → Cutscene → Playing ↔ Paused → Won/Lost → Restart/Main Menu), 4 lanes with hover + multi-select, cards with grayscale lock/unlock, buying turtles, jump/duck, three waves spawning in random lanes, projectiles flying, health bars, contact stop.
+Requirement-by-requirement status lives in `context/docs/REQUIREMENTS.md` (✅ = done and checked).
 
-Placeholder or stub (search `TODO(A)`, `TODO(B)`, `TODO(C)`, `TODO(D)`):
-- **all models** are simple stand-ins (`models/Placeholders.cpp`), to be replaced with detailed ones;
-- **text draws nothing yet** (`ui/Text.cpp`): FreeType is built and linked, but the learnopengl Text-Rendering code and a font still need adding. Menus show unlabeled buttons until then: Main = Start / Sound / Exit, top to bottom;
-- **audio is a stub** (`audio/Audio.cpp`);
-- combat damage, pizza drops/pickup, and environment props are TODOs.
+Done: everything in the game itself — menus (main, pause with controls, win/lose, sound screen), the 16 s intro cutscene, the sewer environment with all 7 elements, the Lair, 3 detailed turtles and 3 detailed villains with animations, full combat (melee, projectiles, jump/duck dodging, Donatello's shield, pizza drops/pickup), waves, economy and cards, effects (placement smoke, hit sparks, defeat effects), HUD and health bars.
+
+Not done yet:
+- **sound bonus** (`audio/Audio.cpp` is a stub): irrKlang vs. the MinGW compiler needs a team decision first;
+- balancing (req 130), stress + regression testing (131, 132), theme review (122);
+- video, README credits pass, zip + submission (133-142);
+- before submitting: set `DEV_KEYS_ENABLED = false` in `Config.h`, and `CUTSCENE_SKIP_ENABLED = false` if the TA doesn't allow skipping (OQ10).
 
 ## Team workflow
 
@@ -74,4 +88,4 @@ Placeholder or stub (search `TODO(A)`, `TODO(B)`, `TODO(C)`, `TODO(D)`):
 
 ## Credits (third-party; final list goes in the submission README, req 138)
 
-GLFW 3.5.1 (zlib license) · GLAD 2 generated loader · GLM (MIT) · FreeType 2.13.3 (FreeType License). Course starter files from the DMET 502 labs. Any font, music or sound added must be original or free (CC0/OFL) and credited here.
+GLFW 3.5.1 (zlib license) · GLAD 2 generated loader · GLM (MIT) · FreeType 2.13.3 (FreeType License). Font: **Bangers** by Vernon Adams / The Bangers Project Authors, SIL Open Font License 1.1 (`assets/fonts/Bangers-OFL.txt`, from github.com/google/fonts). Course starter files from the DMET 502 labs. Any font, music or sound added must be original or free (CC0/OFL) and credited here.
