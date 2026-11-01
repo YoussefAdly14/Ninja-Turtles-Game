@@ -27,6 +27,10 @@ private:
     Hud m_hud;
     Menu m_mainMenu, m_soundMenu, m_pauseMenu, m_winMenu, m_loseMenu;
     float m_clock = 0.0f;      // real time, keeps menu backgrounds animated
+    bool m_placingDonatello = false;   // card clicked: next lane click puts him there (DONATELLO_FREE_PLACEMENT)
+    int   m_ghostLane = -1;            // preview of that click: lane under the cursor (-1 = none), clamped x, would it work
+    float m_ghostX = 0.0f;
+    bool  m_ghostValid = false;
     bool m_debugDraw = false;  // F1: hitboxes + FPS (req 16), off by default
     float m_fps = 60.0f;       // smoothed, for the debug overlay
 

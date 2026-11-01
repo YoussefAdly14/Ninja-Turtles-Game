@@ -120,8 +120,10 @@ TurtleKind Hud::update(const World& world, glm::vec2 mouseWorld, bool clicked)
     }
     if (!clicked || hoveredCard < 0) return TurtleKind::Count;
 
-    // no lane selected: explain and spend nothing (req 66, NF15)
-    if (world.lanes.lastSelectedLane < 0) {
+    // no lane selected: explain and spend nothing (req 66, NF15). Donatello picks his spot in the lane
+    // with the mouse instead, so his card doesn't need a selected lane.
+    bool pickedOnLane = DONATELLO_FREE_PLACEMENT && hoveredCard == (int)TurtleKind::Donatello;
+    if (world.lanes.lastSelectedLane < 0 && !pickedOnLane) {
         showHint(world, "SELECT A LANE FIRST!", "CLICK A LANE, THEN THE CARD");
         return TurtleKind::Count;
     }
@@ -146,7 +148,8 @@ void Hud::drawCard(int i, const World& world) const
     Renderer::setGrayscale(unlocked ? 0.0f : 1.0f);
     glm::vec4 text = unlocked ? UI_TEXT : UI_TEXT_DIM;
 
-    Renderer::drawRoundedRect(c, CARD_SIZE + glm::vec2(hovered ? 10.0f : 6.0f), 12.0f, hovered ? UI_ACCENT : UI_FRAME);
+    bool active = i == activeCard;   // placement mode on: keeps the glow while the mouse is out in the lane
+    Renderer::drawRoundedRect(c, CARD_SIZE + glm::vec2(hovered || active ? 10.0f : 6.0f), 12.0f, hovered || active ? UI_ACCENT : UI_FRAME);
     Renderer::drawRoundedRect(c, CARD_SIZE, 9.0f, m_cardPressed && hovered ? hexColor(0x3A2F24) : CARD_BODY);
 
     // name band in the turtle's mask colour (req 61)
@@ -182,10 +185,12 @@ void Hud::drawHintArea(const World& world) const
 {
     float age = world.time - m_hintTime;
     bool hint = age >= 0.0f && age < HINT_DURATION;
-    if (!hint && hoveredCard < 0) return;
+    bool placing = !hint && hoveredCard < 0 && activeCard >= 0;   // placement mode: tell the player what to do
+    if (!hint && hoveredCard < 0 && !placing) return;
+    int shown = hoveredCard >= 0 ? hoveredCard : activeCard;
 
-    std::string line1 = hint ? m_hint : std::string(CARD_NAMES[hoveredCard]) + " - " + CARD_ROLES[hoveredCard];
-    std::string line2 = hint ? m_hintDetail : CARD_INFO[hoveredCard];
+    std::string line1 = hint ? m_hint : (placing ? std::string("PLACE ") + CARD_NAMES[shown] : std::string(CARD_NAMES[shown]) + " - " + CARD_ROLES[shown]);
+    std::string line2 = hint ? m_hintDetail : (placing ? "CLICK A SPOT - RIGHT-CLICK CANCELS" : CARD_INFO[shown]);
     float s1 = UiStyle::fitScale(line1, 0.6f, HINT_MAX_WIDTH - 24.0f);
     float s2 = UiStyle::fitScale(line2, 0.4f, HINT_MAX_WIDTH - 24.0f);
     float pop = hint ? 1.0f + 0.15f * (1.0f - clamp01(age / HINT_POP)) : 1.0f;   // pops in, then settles
@@ -194,7 +199,7 @@ void Hud::drawHintArea(const World& world) const
     glm::vec2 c(HINT_X, HUD_Y);
     Renderer::drawRoundedRect(c, size + glm::vec2(8.0f), 12.0f, UI_FRAME);
     Renderer::drawRoundedRect(c, size, 9.0f, hint ? UI_WARNING : UI_PANEL);
-    if (!hint) Renderer::drawRect({ c.x - size.x * 0.5f + 6.0f, c.y }, { 6.0f, size.y - 16.0f }, maskColor((TurtleKind)hoveredCard));
+    if (!hint) Renderer::drawRect({ c.x - size.x * 0.5f + 6.0f, c.y }, { 6.0f, size.y - 16.0f }, maskColor((TurtleKind)shown));
 
     UiStyle::drawOutlinedText(line1, c.x, c.y + 4.0f, s1 * pop, UI_TEXT, 2.0f);
     Text::drawCentered(line2, c.x, c.y - 26.0f, s2 * pop, hint ? UI_TEXT : UI_TEXT_DIM);

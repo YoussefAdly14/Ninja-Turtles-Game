@@ -43,11 +43,13 @@ const glm::vec4 SPARK_PUNCH      = hexColor(0xFFE27A);
 // villain attacks. "Walked past him" = the turtle's centre is beyond his front (right) edge, so a
 // turtle that was just placed next to him and got stopped by a villain he is blocking stays covered.
 // Once it walks past him, or he dies, it can be hit again.
-static bool isShielded(const World& world, const Turtle& t)
+// Donatello can stand anywhere in the lane, so he only shields against an attacker on his right
+// (attackerX = the villain's or the shot's x): an attacker already to his left is on the Lair side of him.
+static bool isShielded(const World& world, const Turtle& t, float attackerX)
 {
     if (t.kind == TurtleKind::Donatello) return false;   // the blocker always takes the hit himself
     for (const Turtle& d : world.turtles)
-        if (d.alive && d.kind == TurtleKind::Donatello && d.lane == t.lane && t.x <= d.right()) return true;
+        if (d.alive && d.kind == TurtleKind::Donatello && d.lane == t.lane && t.x <= d.right() && attackerX > d.x) return true;
     return false;
 }
 
@@ -96,7 +98,7 @@ static void meleeStrikes(World& world)
         v.meleeStrike = false;
         Turtle* target = nullptr;
         for (Turtle& t : world.turtles) {
-            if (!t.alive || isShielded(world, t) || !overlapsX(v, t, ROCKSTEADY_REACH)) continue;
+            if (!t.alive || isShielded(world, t, v.x) || !overlapsX(v, t, ROCKSTEADY_REACH)) continue;
             if (!target || std::fabs(t.x - v.x) < std::fabs(target->x - v.x)) target = &t;
         }
         if (target) {
@@ -133,7 +135,7 @@ static void projectileHits(World& world)
             // (Donatello wins a tie). Turtles behind Donatello are skipped: he takes it (req 79).
             Turtle* target = nullptr;
             for (Turtle& t : world.turtles) {
-                if (!t.alive || isShielded(world, t) || !overlapsBox(p, t) || dodges(t, p.band)) continue;
+                if (!t.alive || isShielded(world, t, p.x) || !overlapsBox(p, t) || dodges(t, p.band)) continue;
                 if (!target || t.right() > target->right()
                     || (t.right() == target->right() && t.kind == TurtleKind::Donatello))
                     target = &t;

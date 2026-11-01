@@ -4,6 +4,7 @@
 #include "core/Renderer.h"
 #include "core/Random.h"
 #include "core/Colors.h"
+#include "core/Transform.h"
 #include "models/TurtleModels.h"
 #include "models/VillainModels.h"
 #include "models/PropModels.h"
@@ -13,6 +14,8 @@
 #include "ui/HealthBar.h"
 #include "audio/Audio.h"
 #include "Config.h"
+
+const float GHOST_BLOCKED_TINT = 0.7f;   // how red the placement preview gets over a refused spot
 
 void Game::init()
 {
@@ -53,6 +56,7 @@ void Game::startNewGame()
 {
     m_world.reset();
     m_hud = Hud();
+    m_placingDonatello = false;
 }
 
 // Dev aid for testing combat without clicking: fixed seed, lots of pizza, a turtle setup that
@@ -179,6 +183,8 @@ void Game::updatePlaying(float dt)
 {
     if (Input::wasKeyPressed(GLFW_KEY_ESCAPE)) {
         state = GameState::Paused;
+        m_placingDonatello = false;
+        m_hud.activeCard = -1;
         return;
     }
     handleDebugKeys();
@@ -187,15 +193,50 @@ void Game::updatePlaying(float dt)
     glm::vec2 mouse = Input::mouseWorld();
     bool clicked = Input::wasMouseClicked();
 
-    // cards: buy + place on the most recently selected lane (req 66, OQ2)
+    // cards: buy + place on the most recently selected lane (req 66, OQ2). Donatello's card instead
+    // switches placement mode on/off: he is bought when a spot in a lane is clicked.
     TurtleKind picked = m_hud.update(m_world, mouse, clicked);
-    if (picked != TurtleKind::Count)
+    if (DONATELLO_FREE_PLACEMENT && picked == TurtleKind::Donatello) {
+        m_placingDonatello = !m_placingDonatello;
+    }
+    else if (picked != TurtleKind::Count) {
+        m_placingDonatello = false;   // another card was clicked
         m_world.placeTurtle(picked, m_world.lanes.lastSelectedLane);
+    }
+    if (!m_world.economy.isUnlocked(TurtleKind::Donatello)) m_placingDonatello = false;   // card relocked (req 63)
 
-    // lanes: hover + click to toggle (laneAt() is -1 over the HUD, so card clicks never toggle lanes)
+    // lanes: hover + click to toggle (laneAt() is -1 over the HUD, so card clicks never toggle lanes).
+    // In placement mode the click puts Donatello at the cursor in the lane under it instead.
     m_world.lanes.updateHover(mouse);
-    if (clicked && m_world.lanes.hoveredLane >= 0)
-        m_world.lanes.toggle(m_world.lanes.hoveredLane);
+    if (m_placingDonatello && Input::wasRightMouseClicked()) m_placingDonatello = false;   // cancel
+    if (clicked && m_world.lanes.hoveredLane >= 0 && picked == TurtleKind::Count) {
+        if (m_placingDonatello) {
+            int lane = m_world.lanes.hoveredLane;
+            PlaceResult result = m_world.checkPlacement(TurtleKind::Donatello, lane, mouse.x);
+            if (result == PlaceResult::Ok) {
+                m_world.placeTurtle(TurtleKind::Donatello, lane, mouse.x);
+                m_placingDonatello = false;
+            }
+            else if (result == PlaceResult::BlockedByDonatello) {   // stay in placement mode: pick another spot
+                m_hud.showHint(m_world, "TOO CLOSE!", "ANOTHER DONATELLO IS THERE");
+            }
+            else if (result == PlaceResult::BlockedByVillain) {
+                m_hud.showHint(m_world, "ENEMY IN THE WAY!", "PICK A SPOT AWAY FROM THEM");
+            }
+        }
+        else {
+            m_world.lanes.toggle(m_world.lanes.hoveredLane);
+        }
+    }
+    m_hud.activeCard = m_placingDonatello ? (int)TurtleKind::Donatello : -1;
+
+    // preview of the placement click: same check the click makes, so the colour never disagrees with it
+    m_ghostLane = -1;
+    if (m_placingDonatello && m_world.lanes.hoveredLane >= 0) {
+        m_ghostLane = m_world.lanes.hoveredLane;
+        m_ghostX = glm::clamp(mouse.x, DONATELLO_MIN_X, DONATELLO_MAX_X);
+        m_ghostValid = m_world.checkPlacement(TurtleKind::Donatello, m_ghostLane, mouse.x) == PlaceResult::Ok;
+    }
 
     bool jump = Input::wasKeyPressed(GLFW_KEY_W) || Input::wasKeyPressed(GLFW_KEY_UP);
     bool duck = Input::isKeyDown(GLFW_KEY_S) || Input::isKeyDown(GLFW_KEY_DOWN);
@@ -208,6 +249,11 @@ void Game::updatePlaying(float dt)
         state = GameState::Lost;
     else if (m_world.allWavesCleared())
         state = GameState::Won;
+
+    if (state != GameState::Playing) {   // game over: no placement mode behind the Win/Lose screen
+        m_placingDonatello = false;
+        m_hud.activeCard = -1;
+    }
 }
 
 void Game::render()
@@ -261,6 +307,18 @@ void Game::renderWorld()
     for (int lane = 0; lane < LANE_COUNT; ++lane) {
         for (const Villain& v : m_world.villains) if (v.lane == lane) v.draw();
         for (const Turtle& tu : m_world.turtles) if (tu.lane == lane) tu.draw();
+    }
+
+    // Donatello placement preview: his model at the cursor + a strip on the floor, green = a click works,
+    // red (damage tint) = it would be refused. On top of the characters, like a cursor.
+    if (m_placingDonatello && m_ghostLane >= 0) {
+        glm::vec4 strip = m_ghostValid ? withAlpha(MUTAGEN_GLOW, 0.6f) : hexColor(0xE03A3A, 0.6f);
+        Renderer::drawRect({ m_ghostX, laneFloorY(m_ghostLane) }, { TURTLE_WIDTH, 10.0f }, strip);
+        Pose idle;
+        idle.time = t;
+        Renderer::setDamageTint(m_ghostValid ? 0.0f : GHOST_BLOCKED_TINT);
+        TurtleModels::draw(TurtleKind::Donatello, translate2D(glm::mat4(1.0f), m_ghostX, laneFloorY(m_ghostLane)), idle);
+        Renderer::setDamageTint(0.0f);
     }
 
     for (const Projectile& p : m_world.projectiles) p.draw();

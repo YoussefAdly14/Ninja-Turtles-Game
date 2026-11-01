@@ -29,7 +29,7 @@ struct Turtle : Entity
     Pose pose() const;
 };
 
-Turtle makeTurtle(TurtleKind kind, int lane, int id);
+Turtle makeTurtle(TurtleKind kind, int lane, int id, float x = TURTLE_SPAWN_X);
 const char* turtleName(TurtleKind kind);
 
 // W/Up = jump, S/Down = duck (held), for every turtle in a selected lane (req 56, 57).

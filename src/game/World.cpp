@@ -2,6 +2,8 @@
 #include "game/Combat.h"
 #include "Config.h"
 #include <algorithm>
+#include <cmath>
+#include <glm/glm.hpp>
 
 void World::reset()
 {
@@ -32,11 +34,33 @@ void World::update(float dt)
     removeDead();
 }
 
-bool World::placeTurtle(TurtleKind kind, int lane)
+// Placement rules. Leonardo/Raphael only need a lane and enough pizza (they all start at the Lair and
+// may overlap other turtles, req 80). Donatello, when he can stand anywhere in the lane, also needs a
+// spot that is free of another Donatello and of villains (AABB overlap, learnopengl Breakout Collisions).
+PlaceResult World::checkPlacement(TurtleKind kind, int lane, float x) const
 {
-    if (lane < 0 || lane >= LANE_COUNT) return false;   // TODO(C): show "select a lane first" (req 66, NF15)
-    if (!economy.spend(kind)) return false;
-    turtles.push_back(makeTurtle(kind, lane, nextId++));
+    if (lane < 0 || lane >= LANE_COUNT) return PlaceResult::NoLane;   // TODO(C): show "select a lane first" (req 66, NF15)
+    if (!economy.isUnlocked(kind)) return PlaceResult::NoPizza;
+    if (kind != TurtleKind::Donatello || !DONATELLO_FREE_PLACEMENT) return PlaceResult::Ok;
+
+    x = glm::clamp(x, DONATELLO_MIN_X, DONATELLO_MAX_X);
+    const float half = TURTLE_WIDTH * 0.5f;
+    for (const Turtle& t : turtles)
+        if (t.alive && t.kind == TurtleKind::Donatello && t.lane == lane && std::fabs(t.x - x) < TURTLE_WIDTH + DONATELLO_GAP)
+            return PlaceResult::BlockedByDonatello;
+    for (const Villain& v : villains)
+        if (v.alive && v.lane == lane && v.left() - PLACE_ENEMY_MARGIN < x + half && x - half < v.right() + PLACE_ENEMY_MARGIN)
+            return PlaceResult::BlockedByVillain;
+    return PlaceResult::Ok;
+}
+
+bool World::placeTurtle(TurtleKind kind, int lane, float x)
+{
+    if (checkPlacement(kind, lane, x) != PlaceResult::Ok) return false;
+    economy.spend(kind);   // cannot fail: checkPlacement() just confirmed the pizza
+    if (kind == TurtleKind::Donatello)
+        x = DONATELLO_FREE_PLACEMENT ? glm::clamp(x, DONATELLO_MIN_X, DONATELLO_MAX_X) : TURTLE_SPAWN_X;
+    turtles.push_back(makeTurtle(kind, lane, nextId++, x));
 
     // ninja smoke as the turtle drops into its lane (req 68)
     const Turtle& t = turtles.back();

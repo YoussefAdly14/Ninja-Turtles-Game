@@ -10,6 +10,9 @@
 #include "game/Collectible.h"
 #include "game/Effects.h"
 
+// Why a turtle can't be placed at a spot (World::checkPlacement). x is clamped to the playfield, never rejected.
+enum class PlaceResult { Ok, NoLane, NoPizza, BlockedByDonatello, BlockedByVillain };
+
 // Everything that exists during one game. A new game = World::reset() (req 20, 25).
 // Game owns one World and runs the state machine around it; gameplay code only needs World.
 struct World
@@ -31,7 +34,8 @@ struct World
     void update(float dt);
 
     // Spawning: push_back into a DIFFERENT vector than the one you're looping over is fine.
-    bool placeTurtle(TurtleKind kind, int lane);   // buys it; false if no lane or not enough pizza
+    PlaceResult checkPlacement(TurtleKind kind, int lane, float x) const;    // can this turtle go here? changes nothing
+    bool placeTurtle(TurtleKind kind, int lane, float x = TURTLE_SPAWN_X);   // buys it; false if checkPlacement() isn't Ok
     void spawnVillain(VillainKind kind, int lane);
     void spawnProjectile(ProjectileKind kind, int lane, float x, bool fromTurtle);
     void dropPizza(int lane, float x, int value);
