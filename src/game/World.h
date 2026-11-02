@@ -24,7 +24,10 @@ struct World
     std::vector<Collectible> collectibles;
     Effects effects;       // smoke, sparks, defeat effects: visual only (req 68, 83, 120)
 
-    float time = 0.0f;     // seconds of gameplay (frozen while paused)
+    int bonusPizzaWave[LANE_COUNT] = {};    // wave in which each lane started its bonus pizzas (0 = not yet)
+    int bonusPizzaShown[LANE_COUNT] = {};   // how many of that lane's bonus pizza spots are already handled
+
+    float time = 0.0f;    // seconds of gameplay (frozen while paused)
     int nextId = 1;
 
     void reset();
@@ -40,5 +43,6 @@ struct World
     bool allWavesCleared() const;      // -> win (req 107)
 
 private:
-    void removeDead();                 // end of frame only (req 10)
+    void spawnBonusPizzas();           // waves 2-3: extra 10-coin pizzas revealed along each active lane
+    void removeDead();                // end of frame only (req 10)
 };
