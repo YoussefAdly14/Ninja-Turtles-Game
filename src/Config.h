@@ -35,6 +35,13 @@ const int PIZZA_VALUE = 15;                     // Foot Soldier (easy)
 const int BEBOP_PIZZA_VALUE = 25;               // medium
 const int ROCKSTEADY_PIZZA_VALUE = 40;          // hard
 const int PIZZA_WAVE_BONUS = 5;                 // + this per wave after wave 1 (wave 2: +5, wave 3: +10)
+// bonus pizzas: waves 2-3 only, revealed one by one per lane as a turtle advances between the background pillars
+const int   BONUS_PIZZA_FIRST_WAVE = 2;
+const int   BONUS_PIZZA_LAST_WAVE = 3;
+const int   BONUS_PIZZA_VALUE = 10;
+const int   BONUS_PIZZA_SPOT_COUNT = 3;
+const float BONUS_PIZZA_SPOTS_X[BONUS_PIZZA_SPOT_COUNT] = { 440.0f, 800.0f, 1150.0f };
+const float BONUS_PIZZA_COLUMNS_X[BONUS_PIZZA_SPOT_COUNT - 1] = { 620.0f, 980.0f };   // turtle passing column i reveals pizza i+2
 const bool REFUND_TURTLE_ON_EXIT = true;        // a turtle that clears its lane and walks off the right edge pays back its cost
 
 // ---------------- turtles ----------------
