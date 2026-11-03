@@ -26,15 +26,19 @@ const float TURTLE_SPAWN_X = LAIR_WIDTH + 50.0f;
 const float VILLAIN_SPAWN_X = WORLD_WIDTH + 60.0f;   // just off-screen, walks in
 
 // ---------------- economy (OQ1) ----------------
-const int START_COINS = 30;                     // enough for 3 Leonardos
 const int LEONARDO_COST = 10;
-const int RAPHAEL_COST = 60;                    // 2 x 30
-const int DONATELLO_COST = 90;                  // 3 x 30
+const int RAPHAEL_COST = 2 * LEONARDO_COST;     // spec: ranged costs 2x melee
+const int DONATELLO_COST = 3 * LEONARDO_COST;   // spec: defense costs 3x melee
+const int START_COINS = 3 * LEONARDO_COST;      // enough for 3 Leonardos
+// a card also stays locked until its wave has started (wave 1 = from the start); coins >= cost is still needed too
+const int LEONARDO_UNLOCK_WAVE = 1;
+const int RAPHAEL_UNLOCK_WAVE = 2;
+const int DONATELLO_UNLOCK_WAVE = 3;
 // pizza dropped by a defeated villain: harder villains and later waves pay more (balance, req 130)
-const int PIZZA_VALUE = 15;                     // Foot Soldier (easy)
-const int BEBOP_PIZZA_VALUE = 25;               // medium
-const int ROCKSTEADY_PIZZA_VALUE = 40;          // hard
-const int PIZZA_WAVE_BONUS = 5;                 // + this per wave after wave 1 (wave 2: +5, wave 3: +10)
+const int PIZZA_VALUE = 10;                     // Foot Soldier (easy)
+const int BEBOP_PIZZA_VALUE = 15;               // medium
+const int ROCKSTEADY_PIZZA_VALUE = 25;          // hard
+const int PIZZA_WAVE_BONUS = 3;                 // + this per wave after wave 1 (wave 2: +3, wave 3: +6)
 const bool REFUND_TURTLE_ON_EXIT = true;        // a turtle that clears its lane and walks off the right edge pays back its cost
 
 // ---------------- turtles ----------------

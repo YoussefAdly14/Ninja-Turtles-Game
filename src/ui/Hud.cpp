@@ -108,15 +108,20 @@ TurtleKind Hud::update(const World& world, glm::vec2 mouseWorld, bool clicked)
     for (int i = 0; i < (int)TurtleKind::Count; ++i) {
         if (!insideCard(i, mouseWorld)) continue;
         // locked cards ignore hover and clicks (req 62); a click only explains why (NF15)
-        if (world.economy.isUnlocked((TurtleKind)i)) hoveredCard = i;
+        if (world.economy.isUnlocked((TurtleKind)i, world.waves.waveNumber())) hoveredCard = i;
         else if (clicked) lockedClicked = i;
     }
     m_cardPressed = hoveredCard >= 0 && Input::isMouseDown();
 
     if (lockedClicked >= 0) {
         TurtleKind kind = (TurtleKind)lockedClicked;
-        showHint(world, "NEED " + std::to_string(turtleCost(kind)) + " PIZZA!",
-                 std::string(CARD_NAMES[lockedClicked]) + " UNLOCKS AT " + std::to_string(turtleCost(kind)));
+        int unlockWave = turtleUnlockWave(kind);
+        if (world.waves.waveNumber() < unlockWave)   // wave lock: pizza alone won't help yet
+            showHint(world, "LOCKED UNTIL WAVE " + std::to_string(unlockWave) + "!",
+                     std::string(CARD_NAMES[lockedClicked]) + " JOINS IN WAVE " + std::to_string(unlockWave));
+        else
+            showHint(world, "NEED " + std::to_string(turtleCost(kind)) + " PIZZA!",
+                     std::string(CARD_NAMES[lockedClicked]) + " UNLOCKS AT " + std::to_string(turtleCost(kind)));
     }
     if (!clicked || hoveredCard < 0) return TurtleKind::Count;
 
@@ -138,7 +143,7 @@ TurtleKind Hud::update(const World& world, glm::vec2 mouseWorld, bool clicked)
 void Hud::drawCard(int i, const World& world) const
 {
     TurtleKind kind = (TurtleKind)i;
-    bool unlocked = world.economy.isUnlocked(kind);
+    bool unlocked = world.economy.isUnlocked(kind, world.waves.waveNumber());
     bool hovered = i == hoveredCard;
     glm::vec2 c = cardCenter(i);
     if (hovered) c.y += m_cardPressed ? -CARD_HOVER_LIFT : CARD_HOVER_LIFT;

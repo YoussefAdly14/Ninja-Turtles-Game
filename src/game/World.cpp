@@ -40,7 +40,7 @@ void World::update(float dt)
 PlaceResult World::checkPlacement(TurtleKind kind, int lane, float x) const
 {
     if (lane < 0 || lane >= LANE_COUNT) return PlaceResult::NoLane;   // TODO(C): show "select a lane first" (req 66, NF15)
-    if (!economy.isUnlocked(kind)) return PlaceResult::NoPizza;
+    if (!economy.isUnlocked(kind, waves.waveNumber())) return PlaceResult::NoPizza;   // not enough pizza, or its wave hasn't started
     if (kind != TurtleKind::Donatello || !DONATELLO_FREE_PLACEMENT) return PlaceResult::Ok;
 
     x = glm::clamp(x, DONATELLO_MIN_X, DONATELLO_MAX_X);
@@ -57,7 +57,7 @@ PlaceResult World::checkPlacement(TurtleKind kind, int lane, float x) const
 bool World::placeTurtle(TurtleKind kind, int lane, float x)
 {
     if (checkPlacement(kind, lane, x) != PlaceResult::Ok) return false;
-    economy.spend(kind);   // cannot fail: checkPlacement() just confirmed the pizza
+    economy.spend(kind, waves.waveNumber());   // cannot fail: checkPlacement() just confirmed it is unlocked
     if (kind == TurtleKind::Donatello)
         x = DONATELLO_FREE_PLACEMENT ? glm::clamp(x, DONATELLO_MIN_X, DONATELLO_MAX_X) : TURTLE_SPAWN_X;
     turtles.push_back(makeTurtle(kind, lane, nextId++, x));

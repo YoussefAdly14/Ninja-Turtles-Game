@@ -513,18 +513,19 @@ void TurtleModels::drawDonatello(const glm::mat4& base, const Pose& pose)
     float lean = sway * 2.0f + recoil * 9.0f - slam * 6.0f;
     glm::mat4 torso = rotate2D(translate2D(pelvis, -recoil * 3.0f, sway * 0.8f), lean);
 
-    drawLeg(pelvis, -6.0f, back, b, SKIN_BACK);
-    drawShell(torso, b);
-    drawLeg(pelvis, 6.0f, front, b, TURTLE_SKIN);
-    drawFront(torso, b);
-
-    // far arm reaches across the chest and braces the staff diagonally (low in front, high behind)
+    // far arm first, like Leonardo and Raphael: the body covers it, so only the near arm shows in front.
+    // It braces the staff diagonally (low in front, high behind).
     float backShoulder = 38.0f + sway * 2.0f;
     float backElbow = 66.0f;
     glm::mat4 backHand = drawArm(torso, b.backShoulder, backShoulder, backElbow, b, SKIN_BACK, false);
     float staffAngle = 110.0f + recoil * 14.0f - sway * 2.0f;
     drawBoStaff(backHand, staffAngle - (lean + backShoulder + backElbow), 80.0f, 74.0f);
     drawHand(backHand, b, SKIN_BACK);
+
+    drawLeg(pelvis, -6.0f, back, b, SKIN_BACK);
+    drawShell(torso, b);
+    drawLeg(pelvis, 6.0f, front, b, TURTLE_SKIN);
+    drawFront(torso, b);
 
     drawHead(torso, b, 2.0f - lean * 0.5f, Face::Goggles, pose.time, 0.8f);
 
