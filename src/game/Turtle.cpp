@@ -49,7 +49,11 @@ void Turtle::update(float dt, World& world)
         jumpTimer -= dt;
         if (jumpTimer < 0.0f) jumpTimer = 0.0f;
         float t = 1.0f - jumpTimer / JUMP_DURATION;
-        yOffset = JUMP_HEIGHT * 4.0f * t * (1.0f - t);
+        // the top lane has little room above it, so the arc is lowered there; dodging uses jumpTimer,
+        // not the height, so gameplay is the same in every lane
+        float headroom = PLAYFIELD_TOP - (laneFloorY(lane) + TURTLE_HEIGHT);
+        float jumpHeight = JUMP_HEIGHT < headroom ? JUMP_HEIGHT : headroom;
+        yOffset = jumpHeight * 4.0f * t * (1.0f - t);
     }
     else {
         yOffset = 0.0f;
