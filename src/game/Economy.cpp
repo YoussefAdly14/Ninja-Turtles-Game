@@ -11,16 +11,6 @@ int turtleCost(TurtleKind kind)
     }
 }
 
-int turtleUnlockWave(TurtleKind kind)
-{
-    switch (kind) {
-    case TurtleKind::Leonardo:  return LEONARDO_UNLOCK_WAVE;
-    case TurtleKind::Raphael:   return RAPHAEL_UNLOCK_WAVE;
-    case TurtleKind::Donatello: return DONATELLO_UNLOCK_WAVE;
-    default:                    return 1;
-    }
-}
-
 int pizzaValue(VillainKind kind, int waveNumber)
 {
     int base = PIZZA_VALUE;
@@ -35,14 +25,14 @@ void Economy::reset()
     coins = START_COINS;
 }
 
-bool Economy::isUnlocked(TurtleKind kind, int waveNumber) const
+bool Economy::isUnlocked(TurtleKind kind) const
 {
-    return waveNumber >= turtleUnlockWave(kind) && coins >= turtleCost(kind);
+    return coins >= turtleCost(kind);
 }
 
-bool Economy::spend(TurtleKind kind, int waveNumber)
+bool Economy::spend(TurtleKind kind)
 {
-    if (!isUnlocked(kind, waveNumber)) return false;
+    if (!isUnlocked(kind)) return false;
     coins -= turtleCost(kind);
     return true;
 }

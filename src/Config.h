@@ -10,7 +10,7 @@ const char* const WINDOW_TITLE = "Shell Shock: Defend the Lair";
 const float WORLD_WIDTH = 1600.0f;
 const float WORLD_HEIGHT = 900.0f;
 const float MAX_DELTA_TIME = 0.05f;      // dt clamp so dragging the window doesn't teleport things (req 5)
-const unsigned int RANDOM_SEED = 0;      // 0 = random every run, any other value = reproducible run (req 13)
+const unsigned int RANDOM_SEED = 0;      // 0 = every new game picks its own seed (printed), any other value = every game uses it (req 13)
 const bool  DEV_KEYS_ENABLED = true;     // F2-F5 testing keys (req 17). Set false before submission.
 const int   DEV_COIN_BONUS = 100;        // F2
 
@@ -29,17 +29,12 @@ const float VILLAIN_SPAWN_X = WORLD_WIDTH + 60.0f;   // just off-screen, walks i
 const int LEONARDO_COST = 10;
 const int RAPHAEL_COST = 2 * LEONARDO_COST;     // spec: ranged costs 2x melee
 const int DONATELLO_COST = 3 * LEONARDO_COST;   // spec: defense costs 3x melee
-const int START_COINS = 3 * LEONARDO_COST;      // enough for 3 Leonardos
-// a card also stays locked until its wave has started (wave 1 = from the start); coins >= cost is still needed too
-const int LEONARDO_UNLOCK_WAVE = 1;
-const int RAPHAEL_UNLOCK_WAVE = 2;
-const int DONATELLO_UNLOCK_WAVE = 3;
+const int START_COINS = 3 * LEONARDO_COST;      // 30: enough for 3 Leonardos, or any one card (a card is usable whenever coins >= its cost)
 // pizza dropped by a defeated villain: harder villains and later waves pay more (balance, req 130)
 const int PIZZA_VALUE = 10;                     // Foot Soldier (easy)
 const int BEBOP_PIZZA_VALUE = 15;               // medium
 const int ROCKSTEADY_PIZZA_VALUE = 25;          // hard
 const int PIZZA_WAVE_BONUS = 3;                 // + this per wave after wave 1 (wave 2: +3, wave 3: +6)
-const bool REFUND_TURTLE_ON_EXIT = true;        // a turtle that clears its lane and walks off the right edge pays back its cost
 
 // ---------------- turtles ----------------
 const float TURTLE_WIDTH = 70.0f;               // hitbox

@@ -58,7 +58,7 @@ Palette: turtle skin #4C9A2A · shell #7A5C2E · plastron #D8C27A · mutagen glo
 - **§7 Submission**: compile errors = 0 marks. Only source files (.h, .cpp, …) in a .zip named `[Team name]-[Name of one team member].zip`, on Google Drive with access granted, via the official form; video preferably a separate link in the same form.
 
 ### Default numbers (from xlsx, keep in `src/Config.h`)
-START_COINS 30 · Leonardo cost 10 · Raphael 20 (2x, unlocks wave 2) · Donatello 30 (3x, unlocks wave 3) · pizza drop 10/15/25 (+3 per wave after the first) · Rocksteady speed ≈1.8× · waves 3/5/10 · first enemy ~2 s in, spawns 3–6 s apart · jump ≈0.6 s · dt clamp 0.05 s · world 1600×900 units via ortho projection.
+START_COINS 30 · Leonardo cost 10 · Raphael 20 (2x) · Donatello 30 (3x), a card is usable whenever coins >= its cost · pizza drop 10/15/25 (+3 per wave after the first) · no refund for a turtle that walks off screen · Rocksteady speed ≈1.8× · waves 3/5/10 · first enemy ~2 s in, spawns 3–6 s apart · jump ≈0.6 s · dt clamp 0.05 s · world 1600×900 units via ortho projection.
 
 ## Where things are
 - `CLAUDE.md` (this file) — always loaded. Keep it short.

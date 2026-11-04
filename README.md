@@ -41,8 +41,18 @@ The first build compiles GLFW and FreeType and takes a minute; after that only c
 | Command | What it shows |
 |---|---|
 | `NinjaTurtlesGame.exe --gallery turtles` (or `villains`, `props`) | every model in every pose: idle, walk, attack, duck, jump, hurt tint, locked grayscale |
-| `NinjaTurtlesGame.exe --demo` | skips menu + cutscene, fixed seed, turtles already in every lane (combat testing) |
+| `NinjaTurtlesGame.exe --demo` | skips menu + cutscene, fixed seed (1, or the one from `--seed`), turtles already in every lane (combat testing) |
 | `powershell -ExecutionPolicy Bypass -File tools/capture.ps1 -GameArgs "--gallery turtles" -Delays "1.5,2" -Out shots/t` | runs the game and saves screenshots of its window after each delay (no mouse needed) |
+
+## Recreating a run (random seed)
+
+Which villains appear, in which lanes and how long apart (all three waves) is decided by **one seed**, picked when a game starts.
+
+1. Every new game prints its seed in the console, e.g. `Seed: 1793828013`, and the F1 overlay shows it at the bottom-left next to the FPS. The last `Seed:` line printed before you play is the one in use (the main menu also starts a game).
+2. To get the same waves again, launch with that seed: `build/debug/NinjaTurtlesGame.exe --seed 1793828013`. Every game of that run uses it, Restart included (a whole number from 1 to 4294967295). Setting `RANDOM_SEED` in `Config.h` and rebuilding does the same.
+3. With neither, every game (Start, Restart) picks a new random seed.
+
+You get the same enemy waves, **not** the same fight: mouse clicks and keys are not recorded, and spawn times can differ by about one frame between machines. For a repeatable video take, use `--seed N`.
 
 ## Project layout
 

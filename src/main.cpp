@@ -2,6 +2,9 @@
 // main only creates the window and runs the loop; everything else lives in Game (learnopengl Breakout layout).
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <cerrno>
+#include <cstdlib>
+#include <iostream>
 #include <string>
 #include "core/Window.h"
 #include "core/Input.h"
@@ -12,18 +15,35 @@
 
 int main(int argc, char** argv)
 {
-    // dev aids, never needed to play:
+    // launch options (none are needed to play):
+    //   --seed N                           every game of this run uses seed N (the same enemy waves); each game prints its seed
+    // dev aids:
     //   --gallery turtles|villains|props   every model in every pose
     //   --demo                             skip menu + cutscene, turtles already placed, fixed seed
     //   --cutscene | --sound               open that screen directly
     //   --pause | --win | --lose           that menu over a demo game that already ran 12 s
     int galleryPage = -1;
     bool demo = false;
+    unsigned int seed = 0;   // 0 = not given
     std::string devScreen;
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--gallery" && i + 1 < argc) galleryPage = Gallery::pageFromName(argv[++i]);
         else if (arg == "--demo") demo = true;
+        else if (arg == "--seed") {
+            // digits only, 1 .. 4294967295; anything else is ignored with a message
+            char* end = nullptr;
+            errno = 0;
+            unsigned long value = i + 1 < argc ? std::strtoul(argv[i + 1], &end, 10) : 0;
+            if (i + 1 < argc && end != argv[i + 1] && *end == '\0' && errno != ERANGE && value > 0 && value <= 0xFFFFFFFFul && argv[i + 1][0] != '-') {
+                seed = static_cast<unsigned int>(value);
+                ++i;
+            }
+            else {
+                std::cerr << "--seed needs a whole number from 1 to 4294967295, ignoring it\n";
+                if (i + 1 < argc && argv[i + 1][0] != '-') ++i;   // skip the bad value, but never swallow the next option
+            }
+        }
         else if (arg == "--cutscene" || arg == "--sound" || arg == "--pause" || arg == "--win" || arg == "--lose")
             devScreen = arg.substr(2);
     }
@@ -38,6 +58,7 @@ int main(int argc, char** argv)
     }
 
     Game game;
+    game.setFixedSeed(seed);   // before init(): init() starts the first game
     game.init();
     if (demo) game.startDemo();
     if (!devScreen.empty()) game.devStart(devScreen);

@@ -73,6 +73,11 @@ All state for one game. `reset()` = new game (coins, waves, lanes, entities). Ga
 - UI flow lives in `Game::updatePlaying`: Donatello's card toggles `m_placingDonatello`; the next left click in a lane places him; right-click, the card again, another card, the card relocking, pause, game over or restart cancel it. `Game::renderWorld` draws the ghost; `Hud::activeCard` lights the card and `Hud::showHint` shows the refusal hints.
 - `Combat::isShielded(world, turtle, attackerX)`: Donatello shields only against attackers to his right.
 
+### Random numbers and seeds
+- `rand()/srand()` only (`core/Random.h`). `seedRandom(seed)` returns the seed in use; 0 = pick a new one.
+- `Game::startNewGame()` sets the seed first (`m_fixedSeed` from `RANDOM_SEED` or `--seed N`, else a fresh one), prints `Seed: N`, then calls `World::reset()`. `WaveManager::reset()` draws the **whole** schedule (kind, lane, wait of every villain of all 3 waves) there, so the seed alone decides the waves and `WaveManager::update()` never calls `rand()`.
+- Visual randomness (`Effects`) still uses `rand()` after that. It can't change the waves, so don't draw gameplay randomness anywhere except `WaveManager::reset()`.
+
 ## Where things go
 
 | Need to... | Put it in |
