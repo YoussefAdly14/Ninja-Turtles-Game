@@ -14,6 +14,7 @@ public:
     GameState state = GameState::MainMenu;
     bool quitRequested = false;
 
+    void setFixedSeed(unsigned int seed) { m_fixedSeed = seed; }   // --seed N: every game uses it (0 = none); call before init()
     void init();       // after Renderer::init
     void shutdown();
     void update(float dt);
@@ -27,6 +28,8 @@ private:
     Hud m_hud;
     Menu m_mainMenu, m_soundMenu, m_pauseMenu, m_winMenu, m_loseMenu;
     float m_clock = 0.0f;      // real time, keeps menu backgrounds animated
+    unsigned int m_fixedSeed = 0;      // 0 = every new game picks its own seed, else every game uses this one (req 13)
+    unsigned int m_seed = 0;           // seed of the current game: decides its waves, printed when the game starts
     bool m_placingDonatello = false;   // card clicked: next lane click puts him there (DONATELLO_FREE_PLACEMENT)
     int   m_ghostLane = -1;            // preview of that click: lane under the cursor (-1 = none), clamped x, would it work
     float m_ghostX = 0.0f;

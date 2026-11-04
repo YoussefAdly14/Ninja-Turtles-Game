@@ -14,12 +14,13 @@
 #include "ui/HealthBar.h"
 #include "audio/Audio.h"
 #include "Config.h"
+#include <iostream>
 
 const float GHOST_BLOCKED_TINT = 0.7f;   // how red the placement preview gets over a refused spot
 
 void Game::init()
 {
-    seedRandom(RANDOM_SEED);
+    if (m_fixedSeed == 0) m_fixedSeed = RANDOM_SEED;   // a --seed given before init() wins; startNewGame() below applies it
 
     // every module builds its meshes once here (NF4)
     TurtleModels::init();
@@ -51,9 +52,13 @@ void Game::shutdown()
     TurtleModels::shutdown();
 }
 
-// fresh coins, wave 1, no entities, no selection (req 20, 25)
+// fresh coins, wave 1, no entities, no selection (req 20, 25).
+// The seed is set first: World::reset() draws the whole wave schedule from rand(), so the seed alone decides
+// the waves. To repeat a game, start with its printed seed (RANDOM_SEED in Config.h).
 void Game::startNewGame()
 {
+    m_seed = seedRandom(m_fixedSeed);
+    std::cout << "Seed: " << m_seed << std::endl;
     m_world.reset();
     m_hud = Hud();
     m_placingDonatello = false;
@@ -63,16 +68,14 @@ void Game::startNewGame()
 // exercises melee, ranged, Donatello protecting a Leonardo behind him, and every lane.
 void Game::startDemo()
 {
-    seedRandom(1);
+    if (m_fixedSeed == 0) m_fixedSeed = 1;   // same waves every demo run, unless a seed was given
     startNewGame();
     m_world.economy.add(1000);
-    // Raphael and Donatello are wave-locked in wave 1, so the demo puts every turtle straight into the world
-    auto put = [this](TurtleKind kind, int lane) { m_world.turtles.push_back(makeTurtle(kind, lane, m_world.nextId++)); };
-    put(TurtleKind::Leonardo, 0);
-    put(TurtleKind::Raphael, 1);
-    put(TurtleKind::Leonardo, 2);
-    put(TurtleKind::Donatello, 2);
-    put(TurtleKind::Raphael, 3);
+    m_world.placeTurtle(TurtleKind::Leonardo, 0);
+    m_world.placeTurtle(TurtleKind::Raphael, 1);
+    m_world.placeTurtle(TurtleKind::Leonardo, 2);
+    m_world.placeTurtle(TurtleKind::Donatello, 2);
+    m_world.placeTurtle(TurtleKind::Raphael, 3);
     state = GameState::Playing;
 }
 
@@ -205,7 +208,7 @@ void Game::updatePlaying(float dt)
         m_placingDonatello = false;   // another card was clicked
         m_world.placeTurtle(picked, m_world.lanes.lastSelectedLane);
     }
-    if (!m_world.economy.isUnlocked(TurtleKind::Donatello, m_world.waves.waveNumber())) m_placingDonatello = false;   // card relocked (req 63)
+    if (!m_world.economy.isUnlocked(TurtleKind::Donatello)) m_placingDonatello = false;   // card relocked (req 63)
 
     // lanes: hover + click to toggle (laneAt() is -1 over the HUD, so card clicks never toggle lanes).
     // In placement mode the click puts Donatello at the cursor in the lane under it instead.
@@ -346,5 +349,5 @@ void Game::renderDebug()
     for (const Collectible& c : m_world.collectibles) box(c, glm::vec4(0.0f, 0.6f, 1.0f, 0.4f));
 
     // FPS in the water channel, where the HUD can't cover it (NF3 check). dt is clamped, so it reads >= 20.
-    Text::draw("FPS " + std::to_string(static_cast<int>(m_fps + 0.5f)), 12.0f, 18.0f, 0.5f, WHITE);
+    Text::draw("FPS " + std::to_string(static_cast<int>(m_fps + 0.5f)) + "   SEED " + std::to_string(m_seed), 12.0f, 18.0f, 0.5f, WHITE);
 }

@@ -66,12 +66,8 @@ void Turtle::update(float dt, World& world)
         x += TURTLE_WALK_SPEED * dt;
         walkCycle += dt * WALK_CYCLE_SPEED;
     }
-    // OQ3: walks off-screen and is removed. It only gets this far if its lane was cleared,
-    // so the player gets the turtle's cost back (REFUND_TURTLE_ON_EXIT)
-    if (left() > WORLD_WIDTH) {
-        alive = false;
-        if (REFUND_TURTLE_ON_EXIT) world.economy.add(turtleCost(kind));
-    }
+    // OQ3: walks off-screen and is removed (no refund)
+    if (left() > WORLD_WIDTH) alive = false;
 
     if (kind == TurtleKind::Donatello) return;   // never attacks (req 78)
 
