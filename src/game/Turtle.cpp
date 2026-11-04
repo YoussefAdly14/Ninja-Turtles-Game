@@ -5,13 +5,13 @@
 #include "models/TurtleModels.h"
 #include "Config.h"
 
-Turtle makeTurtle(TurtleKind kind, int lane, int id)
+Turtle makeTurtle(TurtleKind kind, int lane, int id, float x)
 {
     Turtle t;
     t.id = id;
     t.kind = kind;
     t.lane = lane;
-    t.x = TURTLE_SPAWN_X;
+    t.x = x;
     t.width = TURTLE_WIDTH;
     t.height = TURTLE_HEIGHT;
     switch (kind) {

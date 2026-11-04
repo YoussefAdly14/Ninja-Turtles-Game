@@ -67,6 +67,12 @@ Entities live in **typed vectors** in `World` (`turtles`, `villains`, `projectil
 ### World (`game/World.h`)
 All state for one game. `reset()` = new game (coins, waves, lanes, entities). Gameplay code takes `World&`, never `Game&`.
 
+### Placing turtles
+- `World::checkPlacement(kind, lane, x)` returns a `PlaceResult` (`Ok, NoLane, NoPizza, BlockedByDonatello, BlockedByVillain`) and changes nothing; `World::placeTurtle(kind, lane, x = TURTLE_SPAWN_X)` calls it, then spends the pizza. The click and the ghost preview both use `checkPlacement`, so they always agree.
+- Leonardo/Raphael: need a lane and enough pizza, appear at `TURTLE_SPAWN_X`. Donatello (when `DONATELLO_FREE_PLACEMENT`): x is clamped to `DONATELLO_MIN_X..MAX_X`, and the spot must be clear of another Donatello (`TURTLE_WIDTH + DONATELLO_GAP`) and of villains (`PLACE_ENEMY_MARGIN`). Walking turtles never block (req 80).
+- UI flow lives in `Game::updatePlaying`: Donatello's card toggles `m_placingDonatello`; the next left click in a lane places him; right-click, the card again, another card, the card relocking, pause, game over or restart cancel it. `Game::renderWorld` draws the ghost; `Hud::activeCard` lights the card and `Hud::showHint` shows the refusal hints.
+- `Combat::isShielded(world, turtle, attackerX)`: Donatello shields only against attackers to his right.
+
 ## Where things go
 
 | Need to... | Put it in |

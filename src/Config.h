@@ -26,15 +26,19 @@ const float TURTLE_SPAWN_X = LAIR_WIDTH + 50.0f;
 const float VILLAIN_SPAWN_X = WORLD_WIDTH + 60.0f;   // just off-screen, walks in
 
 // ---------------- economy (OQ1) ----------------
-const int START_COINS = 30;                     // enough for 3 Leonardos
 const int LEONARDO_COST = 10;
-const int RAPHAEL_COST = 60;                    // 2 x 30
-const int DONATELLO_COST = 90;                  // 3 x 30
+const int RAPHAEL_COST = 2 * LEONARDO_COST;     // spec: ranged costs 2x melee
+const int DONATELLO_COST = 3 * LEONARDO_COST;   // spec: defense costs 3x melee
+const int START_COINS = 3 * LEONARDO_COST;      // enough for 3 Leonardos
+// a card also stays locked until its wave has started (wave 1 = from the start); coins >= cost is still needed too
+const int LEONARDO_UNLOCK_WAVE = 1;
+const int RAPHAEL_UNLOCK_WAVE = 2;
+const int DONATELLO_UNLOCK_WAVE = 3;
 // pizza dropped by a defeated villain: harder villains and later waves pay more (balance, req 130)
-const int PIZZA_VALUE = 15;                     // Foot Soldier (easy)
-const int BEBOP_PIZZA_VALUE = 25;               // medium
-const int ROCKSTEADY_PIZZA_VALUE = 40;          // hard
-const int PIZZA_WAVE_BONUS = 5;                 // + this per wave after wave 1 (wave 2: +5, wave 3: +10)
+const int PIZZA_VALUE = 10;                     // Foot Soldier (easy)
+const int BEBOP_PIZZA_VALUE = 15;               // medium
+const int ROCKSTEADY_PIZZA_VALUE = 25;          // hard
+const int PIZZA_WAVE_BONUS = 3;                 // + this per wave after wave 1 (wave 2: +3, wave 3: +6)
 // bonus pizzas: waves 2-3 only, revealed one by one per lane as a turtle advances between the background pillars
 const int   BONUS_PIZZA_FIRST_WAVE = 2;
 const int   BONUS_PIZZA_LAST_WAVE = 3;
@@ -50,6 +54,12 @@ const float TURTLE_HEIGHT = 120.0f;
 const int   LEONARDO_HP = 5;
 const int   RAPHAEL_HP = 5;
 const int   DONATELLO_HP = 7;                   // "7 hits" (OQ6: treated as HP)
+// Donatello can be placed anywhere along a lane (TA approved). false = old rule, he appears at TURTLE_SPAWN_X like the others.
+const bool  DONATELLO_FREE_PLACEMENT = true;
+const float DONATELLO_MIN_X = TURTLE_SPAWN_X;           // leftmost spot: where he used to appear
+const float DONATELLO_MAX_X = WORLD_WIDTH - 80.0f;      // keeps him clear of the villain spawn zone
+const float DONATELLO_GAP = 10.0f;                      // free space needed between two Donatellos in a lane
+const float PLACE_ENEMY_MARGIN = 20.0f;                 // free space needed between a new Donatello and a villain
 const int   TURTLE_DAMAGE = 1;
 const float TURTLE_WALK_SPEED = 45.0f;
 const float LEONARDO_ATTACK_INTERVAL = 0.8f;

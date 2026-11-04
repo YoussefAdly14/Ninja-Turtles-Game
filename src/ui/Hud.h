@@ -12,10 +12,14 @@ class Hud
 {
 public:
     int hoveredCard = -1;
+    int activeCard = -1;   // card whose placement mode is on (Donatello, set by Game): drawn highlighted + hint
 
     // Returns the kind whose (unlocked) card was clicked this frame with a lane selected, or TurtleKind::Count.
     TurtleKind update(const World& world, glm::vec2 mouseWorld, bool clicked);
     void draw(const World& world) const;
+
+    // red hint plate for a few seconds after an invalid action (req 66, NF15)
+    void showHint(const World& world, const std::string& text, const std::string& detail);
 
 private:
     bool m_cardPressed = false;          // mouse held on the hovered card
@@ -35,7 +39,6 @@ private:
     int m_bannerWave = 0;
     float m_bannerTime = -100.0f;
 
-    void showHint(const World& world, const std::string& text, const std::string& detail);
     void drawCard(int i, const World& world) const;
     void drawHintArea(const World& world) const;
     void drawPizzaCounter(const World& world) const;
