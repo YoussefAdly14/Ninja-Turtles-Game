@@ -87,9 +87,20 @@ All state for one game. `reset()` = new game (coins, waves, lanes, entities). Ga
 | add a mesh for a model | that model's `.cpp`, created in `init()` |
 | add an entity behaviour | `Turtle.cpp` / `Villain.cpp` (per-unit) or `Combat.cpp` (between units) |
 | add a new screen | a `GameState` + `Menu` factory in `ui/Menu.cpp` + a `MenuAction` |
-| add a sound trigger | call `Audio::play(Sound::X)` at the event; add the enum value if missing |
+| add a sound trigger | call `Audio::play(Sound::X)` at the event (see "Adding a sound" below for a new one) |
 | add an effect (sparks, smoke) | new `game/Effects.h/.cpp` (owner B), drawn after characters |
 | add a file | anywhere under `src/`, then re-run CMake configure (sources are globbed) |
+
+## Adding a sound
+
+Audio is miniaudio's high-level engine (`ma_engine` / `ma_sound`) in `audio/Audio.cpp`; the only other miniaudio file is `audio/miniaudio.cpp` (the implementation). To add an effect:
+
+1. Add a value to `enum class Sound` in `audio/Audio.h`, **before `Count`**.
+2. Add its row to `SOUND_TABLE` in `audio/Audio.cpp`, at the same position as in the enum: file path, volume (0..1, evens out loudness), minimum gap in seconds before it may play again. A `static_assert` fails the build if the table and the enum don't match.
+3. Put the `.wav` in `assets/sounds/`. To keep every sound original, add a `make_<name>()` function to `tools/make_sounds.py` and re-run it (`pip install numpy`, `python tools/make_sounds.py`).
+4. Call `Audio::play(Sound::YourSound)` where it happens. Re-run CMake build so the file is copied next to the exe.
+
+Each effect is loaded pre-decoded into 6 voices that are used round-robin, so it can overlap itself. Volume and mute are the engine's master volume, so they also change sounds that are already playing (req 128). The music follows the game state from `Game.cpp`: `playMusic` (from the start) on Main Menu / Start / Restart, `pauseMusic` / `resumeMusic` around Pause, `stopMusic` in `Game::endGame` before the win/lose sting. A file that fails to load prints `Audio: could not load ...`; with no audio device the game runs silently.
 
 ## File owners (from the team split in REQUIREMENTS.md; reviewer pairs A↔C, B↔D)
 

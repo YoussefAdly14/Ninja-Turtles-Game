@@ -40,6 +40,7 @@ private:
     void startNewGame();
     void updatePlaying(float dt);
     void handleMenuAction(MenuAction action);
+    void endGame(GameState result);   // Won or Lost: stop the world, the music, play the sting
     void renderWorld();
     void renderDebug();
     void handleDebugKeys();

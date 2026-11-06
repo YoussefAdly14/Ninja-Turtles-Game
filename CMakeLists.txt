@@ -13,7 +13,7 @@ set(FT_DISABLE_PNG      ON  CACHE BOOL "" FORCE)
 set(FT_DISABLE_HARFBUZZ ON  CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI   ON  CACHE BOOL "" FORCE)
 
-# third-party libraries (GLAD, GLFW, GLM, FreeType) -- change this one line if the folder moves
+# third-party libraries (GLAD, GLFW, GLM, FreeType, miniaudio) -- change this one line if the folder moves
 set(EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/context/external)
 
 add_subdirectory(${EXTERNAL_DIR}/glfw-3.5.1 glfw)
@@ -36,8 +36,15 @@ file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
 add_executable(NinjaTurtlesGame ${GAME_SOURCES})
 
-target_include_directories(NinjaTurtlesGame PRIVATE src ${EXTERNAL_DIR}/glad/include)
+target_include_directories(NinjaTurtlesGame PRIVATE src ${EXTERNAL_DIR}/glad/include ${EXTERNAL_DIR}/miniaudio)
 target_link_libraries(NinjaTurtlesGame PRIVATE glfw OpenGL::GL glm::glm freetype)
+
+# miniaudio (sound, header-only, implementation in src/audio/miniaudio.cpp) needs pthreads, dlopen
+# and libm on Linux. Windows needs nothing extra.
+if(UNIX AND NOT APPLE)
+    find_package(Threads REQUIRED)
+    target_link_libraries(NinjaTurtlesGame PRIVATE Threads::Threads ${CMAKE_DL_LIBS} m)
+endif()
 
 # MinGW: bake the C++ runtime into the .exe so it also runs outside VS Code
 if(MINGW)
