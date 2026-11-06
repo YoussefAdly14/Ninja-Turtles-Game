@@ -13,14 +13,14 @@
 - Getting started: Creating-a-window, Hello-Window, Hello-Triangle (VBO/VAO/EBO), Shaders (+ `shader.h` class), Textures (stb_image), Transformations (GLM), Coordinate-Systems (model/view/projection, `glm::ortho`), Camera.
 - Model-Loading: Assimp, Mesh, Model (taught in Lab 4).
 - Advanced-OpenGL: Depth-testing, Blending (transparent lane highlight/fades), Framebuffers (post-processing e.g. grayscale), Advanced-GLSL, Instancing.
-- In-Practice: **2D-Game/Breakout series** (Setting-up, Rendering-Sprites, Levels, Collisions, Particles, Postprocessing, Powerups, **Audio = irrKlang**, Render-text) — the closest model for this 2D game's structure; **Text-Rendering (FreeType)**; Debugging.
+- In-Practice: **2D-Game/Breakout series** (Setting-up, Rendering-Sprites, Levels, Collisions, Particles, Postprocessing, Powerups, Audio (we use miniaudio instead of irrKlang, see below), Render-text) — the closest model for this 2D game's structure; **Text-Rendering (FreeType)**; Debugging.
 - Guest article 2021/Scene/Scene-Graph (parent→child transforms, for the character hierarchy).
 - Lighting/PBR/shadows etc. exist but are not needed for a 2D game.
 - Plain C++ glue for game logic (structs/classes, `std::vector`, `std::map`, `rand()`, `std::string`) as used in the labs and the Breakout code is fine.
 
 ### Spreadsheet suggestions that would break the rules → use this instead
 - Text: xlsx says "stb_truetype or FreeType" → **FreeType only** (learnopengl Text-Rendering / Breakout Render-text).
-- Sound bonus: xlsx says "miniaudio, SDL_mixer or irrKlang" → **irrKlang only** (Breakout Audio).
+- Sound bonus: xlsx says "miniaudio, SDL_mixer or irrKlang" → **miniaudio only** (team decision, overrides learnopengl Breakout Audio's irrKlang: irrKlang is a prebuilt DLL with shaky 64-bit MinGW support; miniaudio 0.11.22 is one public-domain header that builds on MinGW and Ubuntu with nothing to install or ship). Use its high-level `ma_engine`/`ma_sound` API only (miniaud.io docs). Implementation only in `src/audio/miniaudio.cpp`.
 - RNG: xlsx says `std::mt19937` → `rand()`/`srand()` like Breakout; ask before using `<random>`.
 - Shader class: use learnopengl's `shader.h` (already in `Lab4/Template/shader.h`) or Lab-style `compileShader()`.
 - Matrix stack / scene graph: GLM matrix multiplication (Lab 4 orbiting cube, learnopengl Transformations, Scene-Graph article). No legacy matrix stack.
@@ -68,7 +68,7 @@ START_COINS 30 · Leonardo cost 10 · Raphael 20 (2x) · Donatello 30 (3x), a ca
 
 - `context/docs/ARCHITECTURE.md` — code layout, module contracts (World, Entity, Pose, model functions, Renderer), frame flow, draw order, file owners. **Read before adding or moving code.**
 - `README.md` — setup/build/run for humans, git workflow.
-- `context/external/` — vendored libraries: GLAD v2 (header-only `<glad/gl.h>`, GL 4.0 core loader, implementation only in `src/core/glad.cpp`), GLFW 3.5.1, GLM, FreeType 2.13.3. irrKlang not added yet.
+- `context/external/` — vendored libraries: GLAD v2 (header-only `<glad/gl.h>`, GL 4.0 core loader, implementation only in `src/core/glad.cpp`), GLFW 3.5.1, GLM, FreeType 2.13.3, miniaudio 0.11.22 (`<miniaudio.h>`).
 
 ## Code (build: `cmake --preset debug` then `cmake --build --preset debug`; exe in `build/debug/`)
 `src/core` engine (Window, Input, Renderer, Mesh, Shader, Transform, Colors, Random) · `src/game` rules (Game state machine, World, Entity, Turtle, Villain, Projectile, Collectible, Combat, LaneManager, WaveManager, Economy) · `src/models` drawing only (Pose → parts) · `src/scene` Environment, Cutscene, Timeline · `src/ui` Text, Button, Menu, Hud, HealthBar · `src/audio` · `assets/` shaders/fonts/sounds (copied next to the exe). New `.cpp` files under `src/` are picked up automatically (re-run configure). Placeholders/stubs are marked `TODO(A|B|C|D)` with req IDs.

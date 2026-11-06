@@ -39,6 +39,7 @@ void Game::init()
 
     startNewGame();
     state = GameState::MainMenu;
+    Audio::playMusic();   // music from the Main Menu on (req 125)
 }
 
 void Game::shutdown()
@@ -112,29 +113,46 @@ void Game::handleDebugKeys()
     if (Input::wasKeyPressed(GLFW_KEY_F2)) m_world.economy.add(DEV_COIN_BONUS);
     if (Input::wasKeyPressed(GLFW_KEY_F3))
         for (Villain& v : m_world.villains) v.takeDamage(v.hp);
-    if (Input::wasKeyPressed(GLFW_KEY_F4)) state = GameState::Lost;
+    if (Input::wasKeyPressed(GLFW_KEY_F4)) endGame(GameState::Lost);
     if (Input::wasKeyPressed(GLFW_KEY_F5)) m_world.waves.skipRestOfWave();
+}
+
+// Win/lose (req 109, 110): everything stops, the music too, and the sting plays once (req 129)
+void Game::endGame(GameState result)
+{
+    state = result;
+    Audio::stopMusic();
+    Audio::play(result == GameState::Won ? Sound::Win : Sound::Lose);
 }
 
 void Game::handleMenuAction(MenuAction action)
 {
+    if (action != MenuAction::None) Audio::play(Sound::Click);   // every button (req 126)
+
+    // req 129: a new game, a restart or the Main Menu start the music over; Continue picks it up again
     switch (action) {
     case MenuAction::Start:
         startNewGame();
         m_cutscene.start();
         state = GameState::Cutscene;
+        Audio::playMusic();
         break;
     case MenuAction::Exit:          quitRequested = true;               break;
     case MenuAction::SoundSettings: state = GameState::SoundSettings;   break;
     case MenuAction::Back:          state = GameState::MainMenu;        break;
-    case MenuAction::Continue:      state = GameState::Playing;         break;
+    case MenuAction::Continue:
+        state = GameState::Playing;
+        Audio::resumeMusic();
+        break;
     case MenuAction::Restart:       // OQ9: restart skips the cutscene
         startNewGame();
         state = GameState::Playing;
+        Audio::playMusic();
         break;
     case MenuAction::MainMenu:
         startNewGame();
         state = GameState::MainMenu;
+        Audio::playMusic();
         break;
     case MenuAction::VolumeUp:      Audio::volumeUp();   break;
     case MenuAction::VolumeDown:    Audio::volumeDown(); break;
@@ -172,7 +190,10 @@ void Game::update(float dt)
         updatePlaying(dt);
         break;
     case GameState::Paused:
-        if (Input::wasKeyPressed(GLFW_KEY_ESCAPE)) state = GameState::Playing;
+        if (Input::wasKeyPressed(GLFW_KEY_ESCAPE)) {
+            state = GameState::Playing;
+            Audio::resumeMusic();
+        }
         else handleMenuAction(m_pauseMenu.update(mouse, clicked));
         break;
     case GameState::Won:
@@ -188,6 +209,7 @@ void Game::updatePlaying(float dt)
 {
     if (Input::wasKeyPressed(GLFW_KEY_ESCAPE)) {
         state = GameState::Paused;
+        Audio::pauseMusic();
         m_placingDonatello = false;
         m_hud.activeCard = -1;
         return;
@@ -206,7 +228,7 @@ void Game::updatePlaying(float dt)
     }
     else if (picked != TurtleKind::Count) {
         m_placingDonatello = false;   // another card was clicked
-        m_world.placeTurtle(picked, m_world.lanes.lastSelectedLane);
+        if (m_world.placeTurtle(picked, m_world.lanes.lastSelectedLane)) Audio::play(Sound::Place);
     }
     if (!m_world.economy.isUnlocked(TurtleKind::Donatello)) m_placingDonatello = false;   // card relocked (req 63)
 
@@ -219,7 +241,7 @@ void Game::updatePlaying(float dt)
             int lane = m_world.lanes.hoveredLane;
             PlaceResult result = m_world.checkPlacement(TurtleKind::Donatello, lane, mouse.x);
             if (result == PlaceResult::Ok) {
-                m_world.placeTurtle(TurtleKind::Donatello, lane, mouse.x);
+                if (m_world.placeTurtle(TurtleKind::Donatello, lane, mouse.x)) Audio::play(Sound::Place);
                 m_placingDonatello = false;
             }
             else if (result == PlaceResult::BlockedByDonatello) {   // stay in placement mode: pick another spot
@@ -231,6 +253,7 @@ void Game::updatePlaying(float dt)
         }
         else {
             m_world.lanes.toggle(m_world.lanes.hoveredLane);
+            Audio::play(Sound::LaneSelect);
         }
     }
     m_hud.activeCard = m_placingDonatello ? (int)TurtleKind::Donatello : -1;
@@ -251,9 +274,9 @@ void Game::updatePlaying(float dt)
 
     // loss first: a villain at the Lair means the Lair fell, even if it was the last one (req 110)
     if (m_world.villainReachedLair())
-        state = GameState::Lost;
+        endGame(GameState::Lost);
     else if (m_world.allWavesCleared())
-        state = GameState::Won;
+        endGame(GameState::Won);
 
     if (state != GameState::Playing) {   // game over: no placement mode behind the Win/Lose screen
         m_placingDonatello = false;

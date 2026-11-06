@@ -3,6 +3,7 @@
 #include "core/Renderer.h"
 #include "core/Transform.h"
 #include "models/TurtleModels.h"
+#include "audio/Audio.h"
 #include "Config.h"
 
 Turtle makeTurtle(TurtleKind kind, int lane, int id, float x)
@@ -74,6 +75,9 @@ void Turtle::update(float dt, World& world)
     // strike frame of the current swing/throw: the katana lands or the sai leaves the hand (req 71, 74)
     if (strikePending && 1.0f - attackAnim >= STRIKE_POINT) {
         strikePending = false;
+        // swish only with a villain in the lane: turtles swing non-stop from placement (req 47, 126)
+        for (const Villain& v : world.villains)
+            if (v.alive && v.lane == lane) { Audio::play(Sound::Attack); break; }
         if (kind == TurtleKind::Leonardo) meleeStrike = true;   // Combat hits the nearest villain in reach
         else world.spawnProjectile(ProjectileKind::Sai, lane, right(), true);
     }

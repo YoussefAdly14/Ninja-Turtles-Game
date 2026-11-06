@@ -1,7 +1,7 @@
 # TMNT requirements (full digest of TMNT.xlsx)
 
 Source of truth for Status/Owner is `TMNT.xlsx`. Read only the section you need.
-**The HARD RULES in `CLAUDE.md` override any library/technique this sheet suggests** (e.g. text = FreeType only, audio = irrKlang only, RNG = rand()).
+**The HARD RULES in `CLAUDE.md` override any library/technique this sheet suggests** (e.g. text = FreeType only, audio = miniaudio only (team decision), RNG = rand()).
 
 
 Line format: `ID [Priority·Sprint·Owner→Reviewer·effort pts] (spec §, deps) Stakeholder: I should be able to … — rules you MUST follow`
@@ -157,12 +157,12 @@ Priority: Must = required by spec · Bonus = sound bonus (all of §5 needed) · 
 - **123** ✅ [Must·S3·D→B·1] (§4.1) Team member: verify turtles and villains look completely different and each type differs from the others — Test: switch the grayscale uniform on for the whole scene. Every type must still be recognizable by shape and equipment alone (recoloring alone fails). Designs must also signal attack type and difficulty: Foot Soldier's overhead throwing pose, Bebop's low-slung blaster, Rocksteady as the biggest and toughest-looking.
 
 ## Sound (bonus)
-- **124** [Bonus·S3·C→A·2] (§5, deps 14) Developer: initialize an audio library and load sounds — miniaudio (single header), SDL_mixer or irrKlang. If no audio device is found, the game still runs silently.
-- **125** [Bonus·S3·C→A·1] (§5, deps 124) Player: hear looping background music — Original or royalty-free/CC0 music, not the TMNT theme song (the video may be published online). Credit sources in the README.
-- **126** [Bonus·S3·C→A·2] (§5, deps 124) Player: hear sound effects for at least 4 interactions — Plan 6: lane select click, turtle placement, attack/hit, character death, pizza pickup, win/lose sting.
-- **127** [Bonus·S3·C→A·2] (§5, deps 22, 124) Player: use a Sound Settings menu to raise, lower or mute the volume — Volume +, Volume −, Mute/Unmute and Back, with the current level shown as a bar or %.
-- **128** [Bonus·S3·C→A·1] (§5, deps 127) Player: hear volume and mute changes applied immediately to music and effects — Master volume applied to all existing sounds ('correctly modify existing sounds'). Kept for the whole session.
-- **129** [Bonus·S3·C→A·1] (§5, deps 125) Game system: pause, resume and restart the music with the game state — Music restarts on Restart; win/lose sting plays once.
+- **124** ✅ [Bonus·S3·C→A·2] (§5, deps 14) Developer: initialize an audio library and load sounds — miniaudio (single header), SDL_mixer or irrKlang. If no audio device is found, the game still runs silently.
+- **125** ✅ [Bonus·S3·C→A·1] (§5, deps 124) Player: hear looping background music — Original or royalty-free/CC0 music, not the TMNT theme song (the video may be published online). Credit sources in the README.
+- **126** ✅ [Bonus·S3·C→A·2] (§5, deps 124) Player: hear sound effects for at least 4 interactions — Plan 6: lane select click, turtle placement, attack/hit, character death, pizza pickup, win/lose sting.
+- **127** ✅ [Bonus·S3·C→A·2] (§5, deps 22, 124) Player: use a Sound Settings menu to raise, lower or mute the volume — Volume +, Volume −, Mute/Unmute and Back, with the current level shown as a bar or %.
+- **128** ✅ [Bonus·S3·C→A·1] (§5, deps 127) Player: hear volume and mute changes applied immediately to music and effects — Master volume applied to all existing sounds ('correctly modify existing sounds'). Kept for the whole session.
+- **129** ✅ [Bonus·S3·C→A·1] (§5, deps 125) Game system: pause, resume and restart the music with the game state — Music restarts on Restart; win/lose sting plays once.
 
 ## Testing & balancing
 - **130** [Must·S3·B→D·2] (§3.3, deps 98, 106) Team member: balance the economy and difficulty so the game is winnable but not trivial — Tune START_COINS, drop value, HP, speeds and attack intervals in Config.h. A playtester who hasn't seen the code should win within 2–3 tries.
